@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RH&VV Q&A — Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=4">
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav" id="nav">
+    <div class="container">
+      <a href="home.html" class="nav-logo">RH&VV<span>.</span></a>
+      <div class="nav-links" id="navLinks">
+        <a href="home.html" class="active" data-i18n="nav.home">Home</a>
+        <a href="board.html" data-i18n="nav.qna">Q&A</a>
+        <div class="lang-toggle">
+          <button data-lang="ko">KR</button>
+          <button class="active" data-lang="en">EN</button>
+        </div>
+        <button class="btn btn-sm btn-outline nav-logout" onclick="doLogout()" data-i18n="nav.logout">Logout</button>
+      </div>
+      <div class="nav-hamburger" id="hamburger">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-text cms-editable">
+        <button class="cms-edit-btn" onclick="CMS.showEditModal('hero')">&#9998;</button>
+        <p class="section-label">Q&A Board</p>
+        <h1>
+          <span data-cms="hero-title1">Building Together</span><br>
+          <span class="highlight" data-cms="hero-title2">Better Answers</span>
+        </h1>
+        <p data-cms="hero-desc">A space where customer questions are answered quickly and accurately, with all records transparently shared.</p>
+        <div class="btn-group">
+          <a href="board.html" class="btn btn-primary" data-i18n="hero.cta1">Go to Q&A</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" style="background:var(--white)">
+    <div class="container">
+      <div class="cards-grid cms-editable">
+        <button class="cms-edit-btn" onclick="CMS.showEditModal('features')">&#9998;</button>
+        <div class="card fade-in">
+          <div class="card-icon">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <h3 data-cms="feat-0-title">Fast Search</h3>
+          <p data-cms="feat-0-desc">Quickly find past questions by category, date, and questioner.</p>
+        </div>
+        <div class="card fade-in">
+          <div class="card-icon">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h3 data-cms="feat-1-title">Transparent Communication</h3>
+          <p data-cms="feat-1-desc">All questions and answers are viewable by the entire team.</p>
+        </div>
+        <div class="card fade-in">
+          <div class="card-icon">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <h3 data-cms="feat-2-title">Progress Tracking</h3>
+          <p data-cms="feat-2-desc">Track resolution status and follow-ups at a glance.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section">
+    <div class="container">
+      <div class="cta-banner fade-in">
+        <h2 data-i18n="cta.title">Have a question?</h2>
+        <p data-i18n="cta.desc">Check existing answers on the board or leave a new question.</p>
+        <a href="board.html" class="btn" data-i18n="cta.btn">Go to Q&A</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2026 RH&VV Q&A. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="home.html">Home</a>
+        <a href="board.html">Q&A</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- CMS Edit Modal -->
+  <div class="modal-overlay" id="cmsEditModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="cmsEditTitle">Edit</h3>
+        <button class="modal-close" onclick="CMS.closeCmsModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="cmsEditBody"></div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/12.9.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js?v=4"></script>
+  <script src="js/main.js?v=4"></script>
+  <script src="js/cms.js?v=4"></script>
+  <script>document.addEventListener('DOMContentLoaded', () => CMS.init());</script>
+</body>
+</html>

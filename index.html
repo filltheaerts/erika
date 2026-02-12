@@ -3,167 +3,65 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ERIKA — Home</title>
+  <title>RH&VV Q&A — Login</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+KR:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=3">
+  <link rel="stylesheet" href="css/style.css?v=4">
 </head>
-<body>
+<body class="login-page">
 
-  <!-- NAV -->
-  <nav class="nav" id="nav">
-    <div class="container">
-      <a href="index.html" class="nav-logo">ERIKA<span>.</span></a>
-      <div class="nav-links" id="navLinks">
-        <a href="index.html" class="active" data-i18n="nav.home">Home</a>
-        <a href="project.html" data-i18n="nav.project">Project</a>
-        <a href="qna.html" data-i18n="nav.qna">Q&A</a>
-        <a href="board.html" data-i18n="nav.board">Board</a>
-        <div class="lang-toggle">
-          <button data-lang="ko">KR</button>
-          <button class="active" data-lang="en">EN</button>
+  <div class="login-wrapper">
+    <div class="login-card">
+      <div class="login-brand">
+        <h1>RH&VV<span>.</span></h1>
+        <p>Q&A Board</p>
+      </div>
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>ID</label>
+          <input type="text" id="loginId" required autocomplete="username" placeholder="Enter your ID">
         </div>
-      </div>
-      <div class="nav-hamburger" id="hamburger">
-        <span></span><span></span><span></span>
-      </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPw" required autocomplete="current-password" placeholder="Enter your password">
+        </div>
+        <p id="loginError" style="color:#E53935; font-size:.85rem; margin-bottom:12px; display:none;">
+          Invalid ID or password.
+        </p>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Login</button>
+      </form>
     </div>
-  </nav>
-
-  <!-- HERO -->
-  <section class="hero">
-    <div class="container">
-      <div class="hero-text cms-editable">
-        <button class="cms-edit-btn" onclick="CMS.showEditModal('hero')">&#9998;</button>
-        <p class="section-label">Welcome</p>
-        <h1>
-          <span data-cms="hero-title1">Building Together</span><br>
-          <span class="highlight" data-cms="hero-title2">Better Answers</span>
-        </h1>
-        <p data-cms="hero-desc">A space where customer questions are answered quickly and accurately, with all records transparently shared.</p>
-        <div class="btn-group">
-          <a href="board.html" class="btn btn-primary" data-i18n="hero.cta1">Go to Board</a>
-          <a href="qna.html" class="btn btn-outline" data-i18n="hero.cta2">View Q&A</a>
-        </div>
-      </div>
-      <div class="hero-visual">
-        <div class="hero-graphic">
-          <div class="hero-graphic-inner">
-            <div class="hero-graphic-bar"></div>
-            <div class="hero-graphic-bar"></div>
-            <div class="hero-graphic-bar"></div>
-          </div>
-          <div class="hero-graphic-dot"></div>
-          <div class="hero-graphic-dot"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- FEATURES -->
-  <section class="section" style="background:var(--white)">
-    <div class="container">
-      <div class="text-center mb-40">
-        <p class="section-label" data-i18n="features.label">Features</p>
-        <h2 data-i18n="features.title">Why This Board?</h2>
-      </div>
-      <div class="cards-grid cms-editable">
-        <button class="cms-edit-btn" onclick="CMS.showEditModal('features')">&#9998;</button>
-        <div class="card fade-in">
-          <div class="card-icon">
-            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          </div>
-          <h3 data-cms="feat-0-title">Fast Search</h3>
-          <p data-cms="feat-0-desc">Quickly find past questions by category, date, and questioner.</p>
-        </div>
-        <div class="card fade-in">
-          <div class="card-icon">
-            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          </div>
-          <h3 data-cms="feat-1-title">Transparent Communication</h3>
-          <p data-cms="feat-1-desc">All questions and answers are viewable by the entire team.</p>
-        </div>
-        <div class="card fade-in">
-          <div class="card-icon">
-            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          </div>
-          <h3 data-cms="feat-2-title">Progress Tracking</h3>
-          <p data-cms="feat-2-desc">Track resolution status and follow-ups at a glance.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ABOUT -->
-  <section class="section">
-    <div class="container">
-      <div class="about-grid fade-in">
-        <div class="about-img">
-          <svg class="placeholder-img" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="200" height="150" rx="12" fill="#6BBF3D" opacity=".08"/>
-            <circle cx="70" cy="60" r="24" fill="#6BBF3D" opacity=".15"/>
-            <rect x="40" y="100" width="120" height="8" rx="4" fill="#6BBF3D" opacity=".12"/>
-            <rect x="55" y="115" width="90" height="8" rx="4" fill="#6BBF3D" opacity=".08"/>
-          </svg>
-        </div>
-        <div class="about-text cms-editable">
-          <button class="cms-edit-btn" onclick="CMS.showEditModal('about')">&#9998;</button>
-          <p class="section-label">About</p>
-          <h2 data-cms="about-title">Efficient Communication, Systematic Management</h2>
-          <p data-cms="about-desc1">No need to rewrite answers to repeated questions. This board records all Q&A and makes it easily searchable.</p>
-          <p data-cms="about-desc2">Categorized by RH, VV, Commercial, User Acquisition and more.</p>
-          <div class="stat-row">
-            <div class="stat"><h3>4+</h3><p>Categories</p></div>
-            <div class="stat"><h3>24/7</h3><p>Access</p></div>
-            <div class="stat"><h3>100%</h3><p>Transparent</p></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA -->
-  <section class="section" style="background:var(--white)">
-    <div class="container">
-      <div class="cta-banner fade-in">
-        <h2 data-i18n="cta.title">Have a question?</h2>
-        <p data-i18n="cta.desc">Check existing answers on the board or leave a new question.</p>
-        <a href="board.html" class="btn" data-i18n="cta.btn">Go to Board</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- FOOTER -->
-  <footer class="footer">
-    <div class="container">
-      <p>&copy; 2026 ERIKA. All rights reserved.</p>
-      <div class="footer-links">
-        <a href="index.html">Home</a>
-        <a href="project.html">Project</a>
-        <a href="qna.html">Q&A</a>
-        <a href="board.html">Board</a>
-      </div>
-    </div>
-  </footer>
-
-  <!-- CMS Edit Modal -->
-  <div class="modal-overlay" id="cmsEditModal">
-    <div class="modal">
-      <div class="modal-header">
-        <h3 id="cmsEditTitle">Edit</h3>
-        <button class="modal-close" onclick="CMS.closeCmsModal()">&times;</button>
-      </div>
-      <div class="modal-body" id="cmsEditBody"></div>
-    </div>
+    <p class="login-footer">&copy; 2026 RH&VV Q&A</p>
   </div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/12.9.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js?v=3"></script>
-  <script src="js/main.js?v=3"></script>
-  <script src="js/cms.js?v=3"></script>
-  <script>document.addEventListener('DOMContentLoaded', () => CMS.init());</script>
+  <script>
+    const GUEST_ID = 'rh.kr.gtm';
+    const GUEST_PW = 'kQ7$mP2x#9nL';
+    const ADMIN_ID = 'erika';
+    const ADMIN_PW = 'erieri23!';
+
+    if (sessionStorage.getItem('rh_auth')) {
+      window.location.href = 'home.html';
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const id = document.getElementById('loginId').value.trim();
+      const pw = document.getElementById('loginPw').value;
+      const errorEl = document.getElementById('loginError');
+
+      if (id === ADMIN_ID && pw === ADMIN_PW) {
+        sessionStorage.setItem('rh_auth', 'admin');
+        window.location.href = 'home.html';
+      } else if (id === GUEST_ID && pw === GUEST_PW) {
+        sessionStorage.setItem('rh_auth', 'guest');
+        window.location.href = 'home.html';
+      } else {
+        errorEl.style.display = 'block';
+        setTimeout(() => errorEl.style.display = 'none', 3000);
+      }
+    }
+  </script>
 </body>
 </html>

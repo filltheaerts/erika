@@ -1,21 +1,13 @@
 /* ============================================================
-   ERIKA — Board Logic (Firebase Firestore)
-   CRUD, Admin Auth, Filtering, Pagination, Real-time Sync
+   RH&VV Q&A — Board Logic (Firebase Firestore)
+   CRUD, Filtering, Pagination, Excel Export, Real-time Sync
    ============================================================ */
-
-const ADMIN_SESSION_KEY = 'erika_admin';
-
-// Admin credentials
-const ADMIN_ID = 'erika';
-const ADMIN_PW = 'erieri23!';
 
 // ── Board Data Layer (Firestore) ──────────────────────────
 window.BoardData = {
-  // 로컬 캐시 — 실시간 리스너가 자동 갱신
   _posts: [],
   _listeners: [],
 
-  // 실시간 구독 시작
   subscribe(callback) {
     const unsubscribe = postsRef
       .orderBy('createdAt', 'desc')
@@ -28,43 +20,31 @@ window.BoardData = {
       }, err => {
         console.error('Firestore listen error:', err);
       });
-
     this._listeners.push(unsubscribe);
     return unsubscribe;
   },
 
-  // 캐시에서 동기적으로 가져오기
-  getPosts() {
-    return this._posts;
-  },
+  getPosts() { return this._posts; },
 
-  // 한 번만 읽기 (Q&A 페이지용)
   async fetchPosts() {
     const snapshot = await postsRef.orderBy('createdAt', 'desc').get();
-    this._posts = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    this._posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     return this._posts;
   },
 
-  // 새 질문 등록
   async addPost(post) {
     post.createdAt = firebase.firestore.FieldValue.serverTimestamp();
     const docRef = await postsRef.add(post);
     return { id: docRef.id, ...post };
   },
 
-  // 답변/수정
   async updatePost(id, updates) {
     await postsRef.doc(id).update(updates);
   },
 
-  // 삭제
   async deletePost(id) {
     await postsRef.doc(id).delete();
   },
-
 };
 
 // ── Board App ──────────────────────────────────────────────
@@ -75,65 +55,24 @@ window.BoardApp = {
   isAdmin: false,
 
   async init() {
-    this.isAdmin = sessionStorage.getItem(ADMIN_SESSION_KEY) === 'true';
+    this.isAdmin = isAdmin();
     this.updateAdminUI();
     this.bindFilters();
-
-    // 실시간 구독 → 자동 렌더
     BoardData.subscribe(() => this.render());
-  },
-
-  // ── Admin Auth ─────────────────────────────────────────
-  handleLogin(e) {
-    try {
-      e.preventDefault();
-      const id = document.getElementById('loginId').value.trim();
-      const pw = document.getElementById('loginPw').value;
-      const errorEl = document.getElementById('loginError');
-
-      if (id === ADMIN_ID && pw === ADMIN_PW) {
-        this.isAdmin = true;
-        sessionStorage.setItem(ADMIN_SESSION_KEY, 'true');
-        this.updateAdminUI();
-        this.closeModals();
-        this.render();
-      } else {
-        errorEl.style.display = 'block';
-        setTimeout(() => errorEl.style.display = 'none', 3000);
-      }
-    } catch (err) {
-      alert('Login error: ' + err.message);
-    }
-  },
-
-  logout() {
-    this.isAdmin = false;
-    sessionStorage.removeItem(ADMIN_SESSION_KEY);
-    this.updateAdminUI();
-    this.render();
   },
 
   updateAdminUI() {
     const adminBar = document.getElementById('adminBar');
-    const loginBtn = document.getElementById('adminLoginBtn');
     const catBtn = document.getElementById('cmsManageCatBtn');
     if (adminBar) adminBar.classList.toggle('show', this.isAdmin);
-    if (loginBtn) loginBtn.style.display = this.isAdmin ? 'none' : '';
     if (catBtn) catBtn.style.display = this.isAdmin ? '' : 'none';
     if (this.isAdmin && typeof CMS !== 'undefined') CMS.enableEditMode();
     if (!this.isAdmin && typeof CMS !== 'undefined') CMS.disableEditMode();
   },
 
-  showLogin() {
-    document.getElementById('loginModal').classList.add('show');
-    document.getElementById('loginId').focus();
-  },
-
   // ── Modals ─────────────────────────────────────────────
   closeModals() {
     document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('show'));
-    const le = document.getElementById('loginError');
-    if (le) le.style.display = 'none';
   },
 
   showWriteModal() {
@@ -146,7 +85,7 @@ window.BoardApp = {
     const post = BoardData.getPosts().find(p => p.id === postId);
     if (!post) return;
 
-    const lang = window._lang || 'ko';
+    const lang = window._lang || 'en';
     const isKo = lang === 'ko';
     const content = document.getElementById('detailContent');
 
@@ -201,7 +140,7 @@ window.BoardApp = {
     document.getElementById('answerResolved').value = post.resolved || 'No';
     document.getElementById('answerFollowUp').value = post.followUp || '';
 
-    const lang = window._lang || 'ko';
+    const lang = window._lang || 'en';
     const isKo = lang === 'ko';
     document.getElementById('answerQuestionPreview').innerHTML = `
       <p style="font-size:.85rem; color:var(--text-muted); margin-bottom:4px;">${isKo ? '질문' : 'Question'}:</p>
@@ -213,62 +152,37 @@ window.BoardApp = {
     document.getElementById('answerModal').classList.add('show');
   },
 
-  // ── CRUD (async Firestore) ─────────────────────────────
+  // ── CRUD ───────────────────────────────────────────────
   async submitQuestion(e) {
     e.preventDefault();
     const from = document.getElementById('writeFrom').value.trim();
     const category = document.getElementById('writeCategory').value;
     const question = document.getElementById('writeQuestion').value.trim();
-
     if (!from || !question) return;
 
     const lang = window._lang || 'ko';
-
-    // 중복 체크
     const posts = BoardData.getPosts();
-    const isDuplicate = posts.some(p =>
-      p.question.toLowerCase().trim() === question.toLowerCase().trim()
-    );
-    if (isDuplicate) {
-      alert(lang === 'ko'
-        ? '비슷한 질문이 이미 등록되어 있습니다. 기존 질문을 확인해주세요.'
-        : 'A similar question already exists. Please check existing questions.');
+    if (posts.some(p => p.question.toLowerCase().trim() === question.toLowerCase().trim())) {
+      alert(lang === 'ko' ? '비슷한 질문이 이미 등록되어 있습니다.' : 'A similar question already exists.');
       return;
     }
 
-    // 도매 키워드 차단
     const wholesaleKeywords = ['도매', '대량', 'wholesale', 'bulk order', 'bulk purchase'];
-    const hasWholesale = wholesaleKeywords.some(kw =>
-      question.toLowerCase().includes(kw.toLowerCase())
-    );
-    if (hasWholesale) {
-      alert(lang === 'ko'
-        ? '도매 관련 문의는 별도로 연락 부탁드립니다.'
-        : 'For wholesale inquiries, please contact us separately.');
+    if (wholesaleKeywords.some(kw => question.toLowerCase().includes(kw.toLowerCase()))) {
+      alert(lang === 'ko' ? '도매 관련 문의는 별도로 연락 부탁드립니다.' : 'For wholesale inquiries, please contact us separately.');
       return;
     }
 
     const today = new Date();
-    const dateStr = today.getFullYear() + '-' +
-      String(today.getMonth() + 1).padStart(2, '0') + '-' +
-      String(today.getDate()).padStart(2, '0');
+    const dateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
 
     try {
-      await BoardData.addPost({
-        date: dateStr,
-        from,
-        category,
-        question,
-        answer: '',
-        answeredBy: '',
-        resolved: 'No',
-        followUp: ''
-      });
+      await BoardData.addPost({ date: dateStr, from, category, question, answer: '', answeredBy: '', resolved: 'No', followUp: '' });
       this.closeModals();
       alert(lang === 'ko' ? '질문이 등록되었습니다.' : 'Question submitted successfully.');
     } catch (err) {
       console.error('Add post error:', err);
-      alert(lang === 'ko' ? '등록 중 오류가 발생했습니다.' : 'An error occurred. Please try again.');
+      alert(lang === 'ko' ? '오류가 발생했습니다.' : 'An error occurred.');
     }
   },
 
@@ -279,7 +193,6 @@ window.BoardApp = {
     const answer = document.getElementById('answerText').value.trim();
     const resolved = document.getElementById('answerResolved').value;
     const followUp = document.getElementById('answerFollowUp').value.trim();
-
     if (!answer || !answeredBy) return;
 
     const lang = window._lang || 'ko';
@@ -289,17 +202,57 @@ window.BoardApp = {
       alert(lang === 'ko' ? '답변이 등록되었습니다.' : 'Answer submitted successfully.');
     } catch (err) {
       console.error('Update post error:', err);
-      alert(lang === 'ko' ? '등록 중 오류가 발생했습니다.' : 'An error occurred. Please try again.');
+      alert(lang === 'ko' ? '오류가 발생했습니다.' : 'An error occurred.');
     }
   },
 
   async deletePost(id) {
-    try {
-      await BoardData.deletePost(id);
-      this.closeModals();
-    } catch (err) {
-      console.error('Delete post error:', err);
-    }
+    try { await BoardData.deletePost(id); this.closeModals(); }
+    catch (err) { console.error('Delete post error:', err); }
+  },
+
+  // ── Excel Download ────────────────────────────────────
+  downloadExcel() {
+    const posts = this.getFilteredPosts();
+    const lang = window._lang || 'en';
+    const isKo = lang === 'ko';
+
+    const headers = [
+      '#',
+      isKo ? '날짜' : 'Date',
+      isKo ? '질문자' : 'From',
+      isKo ? '카테고리' : 'Category',
+      isKo ? '질문' : 'Question',
+      isKo ? '답변' : 'Answer',
+      isKo ? '답변자' : 'Answered by',
+      isKo ? '상태' : 'Status',
+      'F/U'
+    ];
+
+    const rows = posts.map((p, i) => [
+      i + 1,
+      p.date || '',
+      p.from || '',
+      p.category || '',
+      p.question || '',
+      p.answer || '',
+      p.answeredBy || '',
+      p.resolved === 'Yes' ? (isKo ? '해결' : 'Resolved') : (isKo ? '대기' : 'Pending'),
+      p.followUp || ''
+    ]);
+
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(cell => '"' + String(cell).replace(/"/g, '""') + '"').join(','))
+      .join('\n');
+
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'RH_VV_QA_' + new Date().toISOString().split('T')[0] + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
   },
 
   // ── Filtering ──────────────────────────────────────────
@@ -310,23 +263,15 @@ window.BoardApp = {
     const statusFilter = document.getElementById('filterStatus')?.value || 'all';
     const answererFilter = (document.getElementById('filterAnswerer')?.value || '').toLowerCase().trim();
 
-    if (search) {
-      posts = posts.filter(p =>
-        (p.question || '').toLowerCase().includes(search) ||
-        (p.answer || '').toLowerCase().includes(search) ||
-        (p.from || '').toLowerCase().includes(search) ||
-        (p.category || '').toLowerCase().includes(search)
-      );
-    }
-    if (catFilter !== 'all') {
-      posts = posts.filter(p => (p.category || '').toLowerCase() === catFilter.toLowerCase());
-    }
-    if (statusFilter !== 'all') {
-      posts = posts.filter(p => p.resolved === statusFilter);
-    }
-    if (answererFilter) {
-      posts = posts.filter(p => (p.answeredBy || '').toLowerCase().includes(answererFilter));
-    }
+    if (search) posts = posts.filter(p =>
+      (p.question || '').toLowerCase().includes(search) ||
+      (p.answer || '').toLowerCase().includes(search) ||
+      (p.from || '').toLowerCase().includes(search) ||
+      (p.category || '').toLowerCase().includes(search)
+    );
+    if (catFilter !== 'all') posts = posts.filter(p => (p.category || '').toLowerCase() === catFilter.toLowerCase());
+    if (statusFilter !== 'all') posts = posts.filter(p => p.resolved === statusFilter);
+    if (answererFilter) posts = posts.filter(p => (p.answeredBy || '').toLowerCase().includes(answererFilter));
     return posts;
   },
 
@@ -345,7 +290,6 @@ window.BoardApp = {
     const tbody = document.getElementById('boardTableBody');
     const emptyEl = document.getElementById('boardEmpty');
     const paginationEl = document.getElementById('boardPagination');
-
     if (!tbody) return;
 
     const filtered = this.getFilteredPosts();
@@ -368,35 +312,25 @@ window.BoardApp = {
 
     tbody.innerHTML = pageItems.map((p, idx) => `
       <tr onclick="BoardApp.showDetail('${p.id}')">
-        <td style="color:var(--text-muted); font-size:.85rem;">${start + idx + 1}</td>
-        <td style="white-space:nowrap; font-size:.85rem;">${escHtml(p.date)}</td>
+        <td>${start + idx + 1}</td>
+        <td>${escHtml(p.date)}</td>
         <td style="font-weight:600;">${escHtml(p.from)}</td>
         <td><span class="badge badge-accent">${escHtml(p.category)}</span></td>
-        <td style="max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escHtml(p.question)}</td>
+        <td class="td-question">${escHtml(p.question)}</td>
         <td>
           <span class="badge ${p.resolved === 'Yes' ? 'badge-green' : 'badge-orange'}">
             ${p.resolved === 'Yes' ? (isKo ? '해결' : 'Resolved') : (isKo ? '대기' : 'Pending')}
           </span>
         </td>
-        <td style="font-size:.85rem; color:var(--text-secondary);">${escHtml(p.answeredBy || '-')}</td>
+        <td>${escHtml(p.answeredBy || '-')}</td>
       </tr>
     `).join('');
 
-    // Pagination
-    if (totalPages <= 1) {
-      paginationEl.innerHTML = '';
-      return;
-    }
+    if (totalPages <= 1) { paginationEl.innerHTML = ''; return; }
     let phtml = '';
-    if (this.currentPage > 1) {
-      phtml += `<button onclick="BoardApp.goPage(${this.currentPage - 1})">&laquo;</button>`;
-    }
-    for (let i = 1; i <= totalPages; i++) {
-      phtml += `<button class="${i === this.currentPage ? 'active' : ''}" onclick="BoardApp.goPage(${i})">${i}</button>`;
-    }
-    if (this.currentPage < totalPages) {
-      phtml += `<button onclick="BoardApp.goPage(${this.currentPage + 1})">&raquo;</button>`;
-    }
+    if (this.currentPage > 1) phtml += `<button onclick="BoardApp.goPage(${this.currentPage - 1})">&laquo;</button>`;
+    for (let i = 1; i <= totalPages; i++) phtml += `<button class="${i === this.currentPage ? 'active' : ''}" onclick="BoardApp.goPage(${i})">${i}</button>`;
+    if (this.currentPage < totalPages) phtml += `<button onclick="BoardApp.goPage(${this.currentPage + 1})">&raquo;</button>`;
     paginationEl.innerHTML = phtml;
   },
 
@@ -415,16 +349,10 @@ function escHtml(text) {
   return d.innerHTML;
 }
 
-// Close modals on Escape
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    document.querySelectorAll('.modal-overlay.show').forEach(m => m.classList.remove('show'));
-  }
+  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.show').forEach(m => m.classList.remove('show'));
 });
 
-// Close modal on overlay click
 document.addEventListener('click', (e) => {
-  if (e.target.classList.contains('modal-overlay')) {
-    e.target.classList.remove('show');
-  }
+  if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('show');
 });
