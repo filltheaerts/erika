@@ -130,7 +130,6 @@ window.BoardApp = {
       const pw = document.getElementById('loginPw').value;
       const errorEl = document.getElementById('loginError');
 
-      alert('DEBUG id=[' + id + '] pw=[' + pw + '] expect=[' + ADMIN_ID + '/' + ADMIN_PW + ']');
       if (id === ADMIN_ID && pw === ADMIN_PW) {
         this.isAdmin = true;
         sessionStorage.setItem(ADMIN_SESSION_KEY, 'true');
