@@ -213,7 +213,7 @@ const i18n = {
 };
 
 // ── Global State ───────────────────────────────────────────
-window._lang = localStorage.getItem('erika_lang') || 'ko';
+window._lang = localStorage.getItem('erika_lang') || 'en';
 
 // ── Language System ────────────────────────────────────────
 function setLanguage(lang) {
