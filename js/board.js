@@ -115,15 +115,15 @@ window.BoardApp = {
         <div class="post-followup">
           <strong>F/U:</strong> ${escHtml(post.followUp)}
         </div>` : ''}
-        ${this.isAdmin ? `
         <div style="margin-top:24px; display:flex; gap:10px;">
           <button class="btn btn-sm btn-primary" onclick="BoardApp.showAnswerModal('${post.id}')">
             ${isKo ? '답변하기' : 'Answer'}
           </button>
+          ${this.isAdmin ? `
           <button class="btn btn-sm btn-outline" style="color:#E53935; border-color:#E53935;" onclick="if(confirm('${isKo ? '삭제하시겠습니까?' : 'Delete this post?'}')) { BoardApp.deletePost('${post.id}'); }">
             ${isKo ? '삭제' : 'Delete'}
-          </button>
-        </div>` : ''}
+          </button>` : ''}
+        </div>
       </div>
     `;
 
