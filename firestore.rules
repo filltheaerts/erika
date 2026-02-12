@@ -1,0 +1,50 @@
+// ============================================================
+// ERIKA — Firestore Security Rules
+// ============================================================
+//
+// [적용 방법]
+// 1. Firebase Console → Firestore Database → 규칙(Rules) 탭
+// 2. 아래 내용을 복사하여 붙여넣기
+// 3. "게시" 클릭
+//
+// [규칙 설명]
+// - 모든 사용자: 게시물 읽기(read) 가능
+// - 모든 사용자: 새 질문 작성(create) 가능 (필수 필드 검증)
+// - 관리자 인증은 클라이언트 측에서 처리하므로,
+//   update/delete는 현재 open으로 설정
+//   (프로덕션 환경에서는 Firebase Auth 연동 권장)
+// ============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // posts 컬렉션
+    match /posts/{postId} {
+
+      // 누구나 읽기 가능
+      allow read: if true;
+
+      // 새 질문 작성 — 필수 필드 검증
+      allow create: if
+        request.resource.data.keys().hasAll([
+          'date', 'from', 'category', 'question',
+          'answer', 'answeredBy', 'resolved', 'followUp'
+        ])
+        && request.resource.data.from is string
+        && request.resource.data.from.size() > 0
+        && request.resource.data.from.size() <= 50
+        && request.resource.data.question is string
+        && request.resource.data.question.size() > 0
+        && request.resource.data.question.size() <= 2000
+        && request.resource.data.category in [
+             'RH', 'VV', 'commercial', 'user acquisition'
+           ];
+
+      // 수정/삭제 — 현재 open (관리자 인증은 클라이언트에서 처리)
+      // 프로덕션에서는 Firebase Auth 기반으로 변경 권장:
+      // allow update, delete: if request.auth != null && request.auth.token.admin == true;
+      allow update, delete: if true;
+    }
+  }
+}

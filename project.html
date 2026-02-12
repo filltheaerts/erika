@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ERIKA — Project</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+KR:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav" id="nav">
+    <div class="container">
+      <a href="index.html" class="nav-logo">ERIKA<span>.</span></a>
+      <div class="nav-links" id="navLinks">
+        <a href="index.html" data-i18n="nav.home">Home</a>
+        <a href="project.html" class="active" data-i18n="nav.project">Project</a>
+        <a href="qna.html" data-i18n="nav.qna">Q&A</a>
+        <a href="board.html" data-i18n="nav.board">Board</a>
+        <div class="lang-toggle">
+          <button class="active" data-lang="ko">KR</button>
+          <button data-lang="en">EN</button>
+        </div>
+      </div>
+      <div class="nav-hamburger" id="hamburger">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="container">
+      <p class="section-label" data-i18n="project.label">Project</p>
+      <h1 data-i18n="project.title">Our Focus Areas</h1>
+      <p data-i18n="project.desc">각 카테고리별 핵심 프로젝트와 진행 현황을 확인하세요.</p>
+    </div>
+  </div>
+
+  <!-- PROJECTS -->
+  <section class="section">
+    <div class="container">
+
+      <!-- Project 1 : RH -->
+      <div class="card project-card fade-in">
+        <div class="project-card-img">
+          <div class="placeholder-box"></div>
+        </div>
+        <div class="project-card-content">
+          <p class="section-label">RH</p>
+          <h3 data-i18n="project.rh.title">RH Operations</h3>
+          <p data-i18n="project.rh.desc">RH 관련 운영 및 전략 프로젝트입니다. 고객 문의의 핵심 카테고리로, 체계적인 답변 체계를 구축하고 있습니다.</p>
+          <div>
+            <span class="tag">Strategy</span>
+            <span class="tag">Operations</span>
+            <span class="tag">Analysis</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 2 : VV -->
+      <div class="card project-card fade-in">
+        <div class="project-card-img">
+          <div class="placeholder-box"></div>
+        </div>
+        <div class="project-card-content">
+          <p class="section-label">VV</p>
+          <h3 data-i18n="project.vv.title">VV Insights</h3>
+          <p data-i18n="project.vv.desc">VV 부문의 데이터 분석 및 인사이트 도출 프로젝트입니다. 실질적인 비즈니스 가치를 창출합니다.</p>
+          <div>
+            <span class="tag">Data</span>
+            <span class="tag">Insights</span>
+            <span class="tag">Growth</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 3 : Commercial -->
+      <div class="card project-card fade-in">
+        <div class="project-card-img">
+          <div class="placeholder-box"></div>
+        </div>
+        <div class="project-card-content">
+          <p class="section-label">Commercial</p>
+          <h3 data-i18n="project.comm.title">Commercial Strategy</h3>
+          <p data-i18n="project.comm.desc">상업 전략 및 시장 분석 프로젝트입니다. US-commercial 팀과 협업하여 시장 경쟁력을 강화합니다.</p>
+          <div>
+            <span class="tag">Market</span>
+            <span class="tag">Commercial</span>
+            <span class="tag">US Team</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 4 : User Acquisition -->
+      <div class="card project-card fade-in">
+        <div class="project-card-img">
+          <div class="placeholder-box"></div>
+        </div>
+        <div class="project-card-content">
+          <p class="section-label">User Acquisition</p>
+          <h3 data-i18n="project.ua.title">User Acquisition</h3>
+          <p data-i18n="project.ua.desc">사용자 확보 전략 프로젝트입니다. 효율적인 유저 획득과 리텐션을 위한 데이터 기반 접근을 추구합니다.</p>
+          <div>
+            <span class="tag">Acquisition</span>
+            <span class="tag">Retention</span>
+            <span class="tag">Analytics</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section" style="background:var(--white)">
+    <div class="container">
+      <div class="cta-banner fade-in">
+        <h2 data-i18n="project.cta.title">프로젝트 관련 질문이 있나요?</h2>
+        <p data-i18n="project.cta.desc">게시판에서 해당 카테고리를 선택하여 질문을 남겨주세요.</p>
+        <a href="board.html" class="btn" data-i18n="project.cta.btn">게시판 바로가기</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2026 ERIKA. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="index.html" data-i18n="nav.home">Home</a>
+        <a href="project.html" data-i18n="nav.project">Project</a>
+        <a href="qna.html" data-i18n="nav.qna">Q&A</a>
+        <a href="board.html" data-i18n="nav.board">Board</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
