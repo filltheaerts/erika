@@ -201,6 +201,7 @@ h3 { font-size: 1.1rem; }
   width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto;
   box-shadow: var(--shadow-lg); animation: modalIn .25s ease;
 }
+#detailModal .modal { max-width: 700px; }
 @keyframes modalIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 .modal-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -237,6 +238,64 @@ h3 { font-size: 1.1rem; }
 }
 .post-detail .post-answer h4 { color: var(--accent-dark); margin-bottom: 6px; }
 .post-detail .post-followup { margin-top: 12px; padding: 12px; background: #FFF8E1; border-radius: var(--radius); font-size: .9rem; }
+.post-action-bar { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ── Comments ──────────────────────────────────────────── */
+.comments-section { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+.comments-title { font-size: .95rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 16px; }
+.comments-list { margin-bottom: 16px; }
+.comments-empty { color: var(--text-muted); font-size: .85rem; font-style: italic; }
+
+.comment-item {
+  padding: 12px 0; border-bottom: 1px solid var(--border-light);
+}
+.comment-item:last-child { border-bottom: none; }
+.comment-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;
+}
+.comment-author { font-size: .85rem; color: var(--text); }
+.comment-time { font-size: .75rem; color: var(--text-muted); }
+.comment-actions { display: flex; gap: 4px; margin-left: auto; }
+.comment-action-btn {
+  font-size: .75rem; color: var(--text-muted); cursor: pointer;
+  padding: 2px 8px; border-radius: 4px; transition: all var(--transition);
+}
+.comment-action-btn:hover { background: var(--bg); color: var(--accent); }
+.comment-del-btn:hover { color: #E53935; }
+.comment-body {
+  font-size: .88rem; line-height: 1.6; color: var(--text-secondary);
+  white-space: pre-wrap; word-break: break-word;
+}
+
+.comment-reply-item {
+  margin-left: 24px; padding: 10px 0 10px 16px;
+  border-left: 2px solid var(--accent-light);
+}
+.reply-arrow { color: var(--accent); font-size: 1rem; line-height: 1; }
+
+.reply-form-wrap {
+  margin-left: 24px; margin-top: 8px; padding: 12px;
+  background: var(--bg); border-radius: var(--radius);
+}
+
+.comment-form-wrap {
+  padding: 16px; background: var(--bg); border-radius: var(--radius);
+}
+.comment-form-row {
+  display: flex; gap: 8px; align-items: center; margin-bottom: 8px;
+}
+.comment-input {
+  flex: 1; padding: 8px 12px; border: 1.5px solid var(--border);
+  border-radius: var(--radius); font-size: .85rem; background: var(--white);
+  transition: border-color var(--transition); max-width: 200px;
+}
+.comment-input:focus { border-color: var(--accent); }
+.comment-textarea {
+  width: 100%; padding: 10px 12px; border: 1.5px solid var(--border);
+  border-radius: var(--radius); font-size: .85rem; background: var(--white);
+  min-height: 60px; resize: vertical; transition: border-color var(--transition);
+}
+.comment-textarea:focus { border-color: var(--accent); }
 
 /* ── Q&A Accordion ─────────────────────────────────────── */
 .qna-search { max-width: 500px; margin: 0 auto 36px; position: relative; }

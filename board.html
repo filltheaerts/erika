@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=5">
+  <link rel="stylesheet" href="css/style.css?v=6">
 </head>
 <body>
 
@@ -150,39 +150,25 @@
     </div>
   </div>
 
-  <!-- ANSWER MODAL (Admin) -->
-  <div class="modal-overlay" id="answerModal">
+  <!-- EDIT MODAL -->
+  <div class="modal-overlay" id="editModal">
     <div class="modal">
       <div class="modal-header">
-        <h3 data-i18n="board.answer.title">Write Answer</h3>
+        <h3 data-i18n="board.edit.title">Edit Question</h3>
         <button class="modal-close" onclick="BoardApp.closeModals()">&times;</button>
       </div>
       <div class="modal-body">
-        <div id="answerQuestionPreview" style="background:var(--bg); padding:16px; border-radius:8px; margin-bottom:20px;"></div>
-        <form id="answerForm" onsubmit="BoardApp.submitAnswer(event)">
-          <input type="hidden" id="answerPostId">
-          <div class="form-row">
-            <div class="form-group">
-              <label data-i18n="board.answer.by">Answered by</label>
-              <input type="text" id="answerBy" required maxlength="50">
-            </div>
-            <div class="form-group">
-              <label data-i18n="board.answer.status">Resolution Status</label>
-              <select id="answerResolved">
-                <option value="Yes" data-i18n="board.answer.yes">Resolved</option>
-                <option value="No" data-i18n="board.answer.no">Pending</option>
-              </select>
-            </div>
+        <form id="editForm" onsubmit="BoardApp.submitEdit(event)">
+          <input type="hidden" id="editPostId">
+          <div class="form-group">
+            <label data-i18n="board.edit.category">Category</label>
+            <select id="editCategory" required></select>
           </div>
           <div class="form-group">
-            <label data-i18n="board.answer.text">Answer</label>
-            <textarea id="answerText" required maxlength="5000" placeholder="Write your answer..." data-i18n-placeholder="board.answer.placeholder"></textarea>
+            <label data-i18n="board.edit.question">Question</label>
+            <textarea id="editQuestion" required maxlength="2000" placeholder="Edit your question..." data-i18n-placeholder="board.edit.qPlaceholder"></textarea>
           </div>
-          <div class="form-group">
-            <label>F/U</label>
-            <input type="text" id="answerFollowUp" placeholder="Follow-up notes (optional)" data-i18n-placeholder="board.answer.fuPlaceholder">
-          </div>
-          <button type="submit" class="btn btn-primary" style="width:100%;" data-i18n="board.answer.submit">Submit Answer</button>
+          <button type="submit" class="btn btn-primary" style="width:100%;" data-i18n="board.edit.submit">Save Changes</button>
         </form>
       </div>
     </div>
@@ -213,10 +199,10 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/12.9.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js?v=5"></script>
-  <script src="js/main.js?v=5"></script>
-  <script src="js/board.js?v=5"></script>
-  <script src="js/cms.js?v=5"></script>
+  <script src="js/firebase-config.js?v=6"></script>
+  <script src="js/main.js?v=6"></script>
+  <script src="js/board.js?v=6"></script>
+  <script src="js/cms.js?v=6"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       await CMS.init();

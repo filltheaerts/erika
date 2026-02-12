@@ -1,6 +1,6 @@
 /* ============================================================
    RH&VV Q&A — Board Logic (Firebase Firestore)
-   CRUD, Filtering, Pagination, Excel Export, Real-time Sync
+   CRUD, Comments/Replies, Edit, Filtering, Pagination, Excel
    ============================================================ */
 
 // ── Board Data Layer (Firestore) ──────────────────────────
@@ -43,7 +43,41 @@ window.BoardData = {
   },
 
   async deletePost(id) {
+    // Delete all comments in subcollection first
+    const comments = await postsRef.doc(id).collection('comments').get();
+    if (!comments.empty) {
+      const batch = db.batch();
+      comments.docs.forEach(doc => batch.delete(doc.ref));
+      await batch.commit();
+    }
     await postsRef.doc(id).delete();
+  },
+
+  // ── Comments Subcollection ──
+  subscribeComments(postId, callback) {
+    return postsRef.doc(postId).collection('comments')
+      .orderBy('createdAt', 'asc')
+      .onSnapshot(snapshot => {
+        const comments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        callback(comments);
+      });
+  },
+
+  async addComment(postId, comment) {
+    comment.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+    return await postsRef.doc(postId).collection('comments').add(comment);
+  },
+
+  async deleteComment(postId, commentId) {
+    // Delete replies to this comment first
+    const replies = await postsRef.doc(postId).collection('comments')
+      .where('parentId', '==', commentId).get();
+    if (!replies.empty) {
+      const batch = db.batch();
+      replies.docs.forEach(doc => batch.delete(doc.ref));
+      await batch.commit();
+    }
+    await postsRef.doc(postId).collection('comments').doc(commentId).delete();
   },
 };
 
@@ -53,6 +87,8 @@ const POSTS_PER_PAGE = 10;
 window.BoardApp = {
   currentPage: 1,
   isAdmin: false,
+  _commentUnsub: null,
+  _currentPostId: null,
 
   async init() {
     this.isAdmin = isAdmin();
@@ -70,24 +106,53 @@ window.BoardApp = {
     if (!this.isAdmin && typeof CMS !== 'undefined') CMS.disableEditMode();
   },
 
+  // ── Author Identity ─────────────────────────────────────
+  getAuthor() {
+    return sessionStorage.getItem('rh_author') || '';
+  },
+
+  setAuthor(name) {
+    if (name) sessionStorage.setItem('rh_author', name);
+  },
+
+  canEditPost(post) {
+    const author = this.getAuthor();
+    return this.isAdmin || (author && post.from === author);
+  },
+
+  canDeleteComment(comment) {
+    const author = this.getAuthor();
+    return this.isAdmin || (author && comment.author === author);
+  },
+
   // ── Modals ─────────────────────────────────────────────
   closeModals() {
     document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('show'));
+    if (this._commentUnsub) {
+      this._commentUnsub();
+      this._commentUnsub = null;
+    }
+    this._currentPostId = null;
   },
 
   showWriteModal() {
     document.getElementById('writeForm').reset();
+    const author = this.getAuthor();
+    if (author) document.getElementById('writeFrom').value = author;
     document.getElementById('writeModal').classList.add('show');
     document.getElementById('writeFrom').focus();
   },
 
+  // ── Detail View with Comments ────────────────────────────
   showDetail(postId) {
     const post = BoardData.getPosts().find(p => p.id === postId);
     if (!post) return;
 
+    this._currentPostId = postId;
     const lang = window._lang || 'en';
     const isKo = lang === 'ko';
     const content = document.getElementById('detailContent');
+    const canEdit = this.canEditPost(post);
 
     content.innerHTML = `
       <div class="post-detail">
@@ -107,49 +172,253 @@ window.BoardApp = {
         <div class="post-answer">
           <h4>A. (${escHtml(post.answeredBy || '-')})</h4>
           <p>${escHtml(post.answer)}</p>
-        </div>` : `
-        <p style="color:var(--text-muted); font-style:italic;">
-          ${isKo ? '아직 답변이 없습니다.' : 'No answer yet.'}
-        </p>`}
+        </div>` : ''}
         ${post.followUp ? `
         <div class="post-followup">
           <strong>F/U:</strong> ${escHtml(post.followUp)}
         </div>` : ''}
-        <div style="margin-top:24px; display:flex; gap:10px;">
-          <button class="btn btn-sm btn-primary" onclick="BoardApp.showAnswerModal('${post.id}')">
-            ${isKo ? '답변하기' : 'Answer'}
-          </button>
+        <div class="post-action-bar">
+          ${canEdit ? `
+          <button class="btn btn-sm btn-outline" onclick="BoardApp.showEditModal('${post.id}')">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:2px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" transform="scale(.58)"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" transform="scale(.58)"/></svg>
+            ${isKo ? '수정' : 'Edit'}
+          </button>` : ''}
+          ${this.isAdmin ? `
+          <button class="btn btn-sm btn-outline" onclick="BoardApp.toggleResolved('${post.id}')" style="color:${post.resolved === 'Yes' ? '#E65100' : '#2E7D32'}; border-color:${post.resolved === 'Yes' ? '#E65100' : '#2E7D32'};">
+            ${post.resolved === 'Yes' ? (isKo ? '미해결로 변경' : 'Mark Pending') : (isKo ? '해결로 변경' : 'Mark Resolved')}
+          </button>` : ''}
           ${this.isAdmin ? `
           <button class="btn btn-sm btn-outline" style="color:#E53935; border-color:#E53935;" onclick="if(confirm('${isKo ? '삭제하시겠습니까?' : 'Delete this post?'}')) { BoardApp.deletePost('${post.id}'); }">
             ${isKo ? '삭제' : 'Delete'}
           </button>` : ''}
         </div>
+
+        <!-- Comments Section -->
+        <div class="comments-section">
+          <h4 class="comments-title">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" transform="scale(.67)"/></svg>
+            ${isKo ? '댓글' : 'Comments'} <span id="commentCount"></span>
+          </h4>
+          <div id="commentsList" class="comments-list">
+            <p style="color:var(--text-muted); font-size:.85rem;">${isKo ? '로딩 중...' : 'Loading...'}</p>
+          </div>
+          <!-- New Comment Form -->
+          <div class="comment-form-wrap">
+            <div class="comment-form-row">
+              <input type="text" id="commentAuthor" class="comment-input" placeholder="${isKo ? '이름' : 'Name'}" maxlength="50" value="${escHtml(this.getAuthor())}">
+              <button class="btn btn-sm btn-primary" onclick="BoardApp.submitComment('${post.id}')">
+                ${isKo ? '댓글 등록' : 'Post Comment'}
+              </button>
+            </div>
+            <textarea id="commentText" class="comment-textarea" placeholder="${isKo ? '댓글을 작성하세요...' : 'Write a comment...'}" maxlength="2000" rows="3"></textarea>
+          </div>
+        </div>
       </div>
     `;
+
+    // Subscribe to comments real-time
+    if (this._commentUnsub) this._commentUnsub();
+    this._commentUnsub = BoardData.subscribeComments(postId, (comments) => {
+      this.renderComments(comments, postId);
+    });
 
     document.getElementById('detailModal').classList.add('show');
   },
 
-  showAnswerModal(postId) {
-    const post = BoardData.getPosts().find(p => p.id === postId);
-    if (!post) return;
-
-    document.getElementById('answerPostId').value = postId;
-    document.getElementById('answerBy').value = post.answeredBy || '';
-    document.getElementById('answerText').value = post.answer || '';
-    document.getElementById('answerResolved').value = post.resolved || 'No';
-    document.getElementById('answerFollowUp').value = post.followUp || '';
+  renderComments(comments, postId) {
+    const listEl = document.getElementById('commentsList');
+    const countEl = document.getElementById('commentCount');
+    if (!listEl) return;
 
     const lang = window._lang || 'en';
     const isKo = lang === 'ko';
-    document.getElementById('answerQuestionPreview').innerHTML = `
-      <p style="font-size:.85rem; color:var(--text-muted); margin-bottom:4px;">${isKo ? '질문' : 'Question'}:</p>
-      <p style="font-weight:600;">${escHtml(post.question)}</p>
-      <p style="font-size:.8rem; color:var(--text-muted); margin-top:6px;">${escHtml(post.from)} · ${post.category} · ${post.date}</p>
-    `;
+
+    const topLevel = comments.filter(c => !c.parentId);
+    const replies = comments.filter(c => c.parentId);
+
+    if (countEl) countEl.textContent = `(${comments.length})`;
+
+    if (comments.length === 0) {
+      listEl.innerHTML = `<p class="comments-empty">${isKo ? '아직 댓글이 없습니다.' : 'No comments yet.'}</p>`;
+      return;
+    }
+
+    let html = '';
+    topLevel.forEach(comment => {
+      const commentReplies = replies.filter(r => r.parentId === comment.id);
+      const canDel = this.canDeleteComment(comment);
+      const timeStr = formatTime(comment.createdAt);
+
+      html += `
+        <div class="comment-item">
+          <div class="comment-header">
+            <strong class="comment-author">${escHtml(comment.author)}</strong>
+            <span class="comment-time">${timeStr}</span>
+            <div class="comment-actions">
+              <button class="comment-action-btn" onclick="BoardApp.showReplyForm('${comment.id}')">
+                ${isKo ? '답글' : 'Reply'}
+              </button>
+              ${canDel ? `<button class="comment-action-btn comment-del-btn" onclick="if(confirm('${isKo ? '삭제하시겠습니까?' : 'Delete?'}')) BoardApp.deleteComment('${postId}', '${comment.id}')">
+                ${isKo ? '삭제' : 'Delete'}
+              </button>` : ''}
+            </div>
+          </div>
+          <div class="comment-body">${escHtml(comment.text)}</div>
+      `;
+
+      // Render replies (대댓글)
+      commentReplies.forEach(reply => {
+        const canDelReply = this.canDeleteComment(reply);
+        const replyTime = formatTime(reply.createdAt);
+
+        html += `
+          <div class="comment-reply-item">
+            <div class="comment-header">
+              <span class="reply-arrow">&#8627;</span>
+              <strong class="comment-author">${escHtml(reply.author)}</strong>
+              <span class="comment-time">${replyTime}</span>
+              ${canDelReply ? `<div class="comment-actions"><button class="comment-action-btn comment-del-btn" onclick="if(confirm('${isKo ? '삭제하시겠습니까?' : 'Delete?'}')) BoardApp.deleteComment('${postId}', '${reply.id}')">
+                ${isKo ? '삭제' : 'Delete'}
+              </button></div>` : ''}
+            </div>
+            <div class="comment-body">${escHtml(reply.text)}</div>
+          </div>
+        `;
+      });
+
+      // Reply form (hidden by default)
+      html += `
+          <div class="reply-form-wrap" id="replyForm_${comment.id}" style="display:none;">
+            <div class="comment-form-row">
+              <input type="text" class="reply-author-input comment-input" placeholder="${isKo ? '이름' : 'Name'}" maxlength="50" value="${escHtml(this.getAuthor())}">
+              <button class="btn btn-sm btn-primary" onclick="BoardApp.submitComment('${postId}', '${comment.id}')">
+                ${isKo ? '답글 등록' : 'Reply'}
+              </button>
+              <button class="btn btn-sm btn-outline" onclick="document.getElementById('replyForm_${comment.id}').style.display='none'">
+                ${isKo ? '취소' : 'Cancel'}
+              </button>
+            </div>
+            <textarea class="reply-text-input comment-textarea" placeholder="${isKo ? '답글을 작성하세요...' : 'Write a reply...'}" maxlength="2000" rows="2"></textarea>
+          </div>
+        </div>
+      `;
+    });
+
+    listEl.innerHTML = html;
+  },
+
+  showReplyForm(commentId) {
+    // Hide all other reply forms first
+    document.querySelectorAll('.reply-form-wrap').forEach(f => f.style.display = 'none');
+    const form = document.getElementById('replyForm_' + commentId);
+    if (form) {
+      form.style.display = 'block';
+      form.querySelector('.reply-text-input').focus();
+    }
+  },
+
+  // ── Edit Post ───────────────────────────────────────────
+  showEditModal(postId) {
+    const post = BoardData.getPosts().find(p => p.id === postId);
+    if (!post || !this.canEditPost(post)) return;
+
+    document.getElementById('editPostId').value = postId;
+    document.getElementById('editQuestion').value = post.question;
+
+    // Populate edit category select from write category
+    const writeCat = document.getElementById('writeCategory');
+    const editCat = document.getElementById('editCategory');
+    if (writeCat && editCat) {
+      editCat.innerHTML = writeCat.innerHTML;
+      editCat.value = post.category;
+    }
 
     this.closeModals();
-    document.getElementById('answerModal').classList.add('show');
+    document.getElementById('editModal').classList.add('show');
+    document.getElementById('editQuestion').focus();
+  },
+
+  async submitEdit(e) {
+    e.preventDefault();
+    const postId = document.getElementById('editPostId').value;
+    const category = document.getElementById('editCategory').value;
+    const question = document.getElementById('editQuestion').value.trim();
+    if (!question) return;
+
+    const lang = window._lang || 'ko';
+    try {
+      await BoardData.updatePost(postId, { category, question });
+      this.closeModals();
+      alert(lang === 'ko' ? '수정되었습니다.' : 'Updated successfully.');
+      this.showDetail(postId);
+    } catch (err) {
+      console.error('Edit post error:', err);
+      alert(lang === 'ko' ? '오류가 발생했습니다.' : 'An error occurred.');
+    }
+  },
+
+  // ── Toggle Resolved (Admin) ─────────────────────────────
+  async toggleResolved(postId) {
+    const post = BoardData.getPosts().find(p => p.id === postId);
+    if (!post || !this.isAdmin) return;
+
+    const newStatus = post.resolved === 'Yes' ? 'No' : 'Yes';
+    try {
+      await BoardData.updatePost(postId, { resolved: newStatus });
+      // Detail will auto-refresh via snapshot listener, reopen
+      setTimeout(() => this.showDetail(postId), 300);
+    } catch (err) {
+      console.error('Toggle resolved error:', err);
+    }
+  },
+
+  // ── Comment CRUD ────────────────────────────────────────
+  async submitComment(postId, parentId) {
+    let authorEl, textEl;
+
+    if (parentId) {
+      const formWrap = document.getElementById('replyForm_' + parentId);
+      if (!formWrap) return;
+      authorEl = formWrap.querySelector('.reply-author-input');
+      textEl = formWrap.querySelector('.reply-text-input');
+    } else {
+      authorEl = document.getElementById('commentAuthor');
+      textEl = document.getElementById('commentText');
+    }
+
+    const author = authorEl.value.trim();
+    const text = textEl.value.trim();
+    if (!author || !text) {
+      const lang = window._lang || 'en';
+      alert(lang === 'ko' ? '이름과 내용을 입력해주세요.' : 'Please enter name and content.');
+      return;
+    }
+
+    this.setAuthor(author);
+
+    try {
+      await BoardData.addComment(postId, {
+        author,
+        text,
+        parentId: parentId || null,
+      });
+      textEl.value = '';
+      if (parentId) {
+        document.getElementById('replyForm_' + parentId).style.display = 'none';
+      }
+    } catch (err) {
+      console.error('Add comment error:', err);
+      const lang = window._lang || 'en';
+      alert(lang === 'ko' ? '오류가 발생했습니다.' : 'An error occurred.');
+    }
+  },
+
+  async deleteComment(postId, commentId) {
+    try {
+      await BoardData.deleteComment(postId, commentId);
+    } catch (err) {
+      console.error('Delete comment error:', err);
+    }
   },
 
   // ── CRUD ───────────────────────────────────────────────
@@ -159,6 +428,9 @@ window.BoardApp = {
     const category = document.getElementById('writeCategory').value;
     const question = document.getElementById('writeQuestion').value.trim();
     if (!from || !question) return;
+
+    // Store author identity
+    this.setAuthor(from);
 
     const lang = window._lang || 'ko';
     const posts = BoardData.getPosts();
@@ -182,26 +454,6 @@ window.BoardApp = {
       alert(lang === 'ko' ? '질문이 등록되었습니다.' : 'Question submitted successfully.');
     } catch (err) {
       console.error('Add post error:', err);
-      alert(lang === 'ko' ? '오류가 발생했습니다.' : 'An error occurred.');
-    }
-  },
-
-  async submitAnswer(e) {
-    e.preventDefault();
-    const postId = document.getElementById('answerPostId').value;
-    const answeredBy = document.getElementById('answerBy').value.trim();
-    const answer = document.getElementById('answerText').value.trim();
-    const resolved = document.getElementById('answerResolved').value;
-    const followUp = document.getElementById('answerFollowUp').value.trim();
-    if (!answer || !answeredBy) return;
-
-    const lang = window._lang || 'ko';
-    try {
-      await BoardData.updatePost(postId, { answer, answeredBy, resolved, followUp });
-      this.closeModals();
-      alert(lang === 'ko' ? '답변이 등록되었습니다.' : 'Answer submitted successfully.');
-    } catch (err) {
-      console.error('Update post error:', err);
       alert(lang === 'ko' ? '오류가 발생했습니다.' : 'An error occurred.');
     }
   },
@@ -347,6 +599,18 @@ function escHtml(text) {
   const d = document.createElement('div');
   d.textContent = text;
   return d.innerHTML;
+}
+
+function formatTime(timestamp) {
+  if (!timestamp) return '';
+  try {
+    const d = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0') + ' ' +
+      String(d.getHours()).padStart(2, '0') + ':' +
+      String(d.getMinutes()).padStart(2, '0');
+  } catch (e) { return ''; }
 }
 
 document.addEventListener('keydown', (e) => {
