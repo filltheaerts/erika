@@ -1055,6 +1055,120 @@ h4 { font-size: 1.1rem; }
   transform: translateY(0);
 }
 
+/* ============================================================
+   CMS — Admin Inline Edit
+   ============================================================ */
+.cms-editable {
+  position: relative;
+}
+.cms-edit-btn {
+  display: none;
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  z-index: 10;
+  transition: all var(--transition);
+  border: none;
+  font-size: .85rem;
+}
+.cms-edit-btn:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-lg);
+}
+body.admin-mode .cms-edit-btn {
+  display: flex;
+}
+body.admin-mode .cms-editable:hover {
+  outline: 2px dashed var(--accent);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+/* CMS Category Manager */
+.cms-cat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.cms-cat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.cms-cat-item input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: .9rem;
+}
+.cms-cat-item .cms-cat-del {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #E53935;
+  border: 1px solid #E53935;
+  font-size: .8rem;
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+.cms-cat-item .cms-cat-del:hover {
+  background: #E53935;
+  color: #fff;
+}
+
+/* CMS Tag Editor */
+.cms-tags-input {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  min-height: 42px;
+  cursor: text;
+}
+.cms-tags-input .cms-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  background: var(--accent-light);
+  color: var(--accent-dark);
+  border-radius: 20px;
+  font-size: .8rem;
+  font-weight: 600;
+}
+.cms-tags-input .cms-tag-del {
+  cursor: pointer;
+  font-size: .7rem;
+  opacity: .6;
+}
+.cms-tags-input .cms-tag-del:hover { opacity: 1; }
+.cms-tags-input input {
+  border: none;
+  outline: none;
+  flex: 1;
+  min-width: 80px;
+  font-size: .85rem;
+  padding: 0;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg); }

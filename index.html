@@ -7,11 +7,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+KR:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=3">
 </head>
 <body>
 
-  <!-- ===== NAVIGATION ===== -->
+  <!-- NAV -->
   <nav class="nav" id="nav">
     <div class="container">
       <a href="index.html" class="nav-logo">ERIKA<span>.</span></a>
@@ -31,19 +31,20 @@
     </div>
   </nav>
 
-  <!-- ===== HERO ===== -->
+  <!-- HERO -->
   <section class="hero">
     <div class="container">
-      <div class="hero-text">
-        <p class="section-label" data-i18n="hero.label">Welcome</p>
+      <div class="hero-text cms-editable">
+        <button class="cms-edit-btn" onclick="CMS.showEditModal('hero')">&#9998;</button>
+        <p class="section-label">Welcome</p>
         <h1>
-          <span data-i18n="hero.title1">함께 만들어가는</span><br>
-          <span class="highlight" data-i18n="hero.title2">더 나은 답변</span>
+          <span data-cms="hero-title1">Building Together</span><br>
+          <span class="highlight" data-cms="hero-title2">Better Answers</span>
         </h1>
-        <p data-i18n="hero.desc">고객의 질문에 빠르고 정확하게 답하고, 모든 기록이 투명하게 공유되는 공간입니다. 과거의 질문과 답변을 쉽게 찾아보세요.</p>
+        <p data-cms="hero-desc">A space where customer questions are answered quickly and accurately, with all records transparently shared.</p>
         <div class="btn-group">
-          <a href="board.html" class="btn btn-primary" data-i18n="hero.cta1">게시판 바로가기</a>
-          <a href="qna.html" class="btn btn-outline" data-i18n="hero.cta2">Q&A 보기</a>
+          <a href="board.html" class="btn btn-primary" data-i18n="hero.cta1">Go to Board</a>
+          <a href="qna.html" class="btn btn-outline" data-i18n="hero.cta2">View Q&A</a>
         </div>
       </div>
       <div class="hero-visual">
@@ -60,40 +61,41 @@
     </div>
   </section>
 
-  <!-- ===== FEATURES ===== -->
+  <!-- FEATURES -->
   <section class="section" style="background:var(--white)">
     <div class="container">
       <div class="text-center mb-40">
         <p class="section-label" data-i18n="features.label">Features</p>
-        <h2 data-i18n="features.title">왜 이 게시판인가요?</h2>
+        <h2 data-i18n="features.title">Why This Board?</h2>
       </div>
-      <div class="cards-grid">
+      <div class="cards-grid cms-editable">
+        <button class="cms-edit-btn" onclick="CMS.showEditModal('features')">&#9998;</button>
         <div class="card fade-in">
           <div class="card-icon">
             <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           </div>
-          <h3 data-i18n="features.card1.title">빠른 검색</h3>
-          <p data-i18n="features.card1.desc">카테고리, 날짜, 질문자별로 과거 질문을 빠르게 찾을 수 있습니다. 같은 질문을 반복하지 않아도 됩니다.</p>
+          <h3 data-cms="feat-0-title">Fast Search</h3>
+          <p data-cms="feat-0-desc">Quickly find past questions by category, date, and questioner.</p>
         </div>
         <div class="card fade-in">
           <div class="card-icon">
             <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           </div>
-          <h3 data-i18n="features.card2.title">투명한 소통</h3>
-          <p data-i18n="features.card2.desc">모든 질문과 답변이 열람 가능하여, 팀 전체가 동일한 정보를 공유합니다.</p>
+          <h3 data-cms="feat-1-title">Transparent Communication</h3>
+          <p data-cms="feat-1-desc">All questions and answers are viewable by the entire team.</p>
         </div>
         <div class="card fade-in">
           <div class="card-icon">
             <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
           </div>
-          <h3 data-i18n="features.card3.title">진행 추적</h3>
-          <p data-i18n="features.card3.desc">해결 여부와 후속 조치(F/U)를 한눈에 파악하여 누락 없이 관리합니다.</p>
+          <h3 data-cms="feat-2-title">Progress Tracking</h3>
+          <p data-cms="feat-2-desc">Track resolution status and follow-ups at a glance.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ===== ABOUT ===== -->
+  <!-- ABOUT -->
   <section class="section">
     <div class="container">
       <div class="about-grid fade-in">
@@ -105,54 +107,63 @@
             <rect x="55" y="115" width="90" height="8" rx="4" fill="#6BBF3D" opacity=".08"/>
           </svg>
         </div>
-        <div class="about-text">
-          <p class="section-label" data-i18n="about.label">About</p>
-          <h2 data-i18n="about.title">효율적인 소통,<br>체계적인 관리</h2>
-          <p data-i18n="about.desc1">반복되는 질문에 대한 답변을 매번 다시 작성할 필요가 없습니다. 이 게시판은 모든 Q&A를 기록하고, 쉽게 검색할 수 있도록 설계되었습니다.</p>
-          <p data-i18n="about.desc2">RH, VV, Commercial, User Acquisition 등 카테고리별로 분류하여 필요한 정보를 즉시 찾으세요.</p>
+        <div class="about-text cms-editable">
+          <button class="cms-edit-btn" onclick="CMS.showEditModal('about')">&#9998;</button>
+          <p class="section-label">About</p>
+          <h2 data-cms="about-title">Efficient Communication, Systematic Management</h2>
+          <p data-cms="about-desc1">No need to rewrite answers to repeated questions. This board records all Q&A and makes it easily searchable.</p>
+          <p data-cms="about-desc2">Categorized by RH, VV, Commercial, User Acquisition and more.</p>
           <div class="stat-row">
-            <div class="stat">
-              <h3>4+</h3>
-              <p data-i18n="about.stat1">Categories</p>
-            </div>
-            <div class="stat">
-              <h3>24/7</h3>
-              <p data-i18n="about.stat2">Access</p>
-            </div>
-            <div class="stat">
-              <h3>100%</h3>
-              <p data-i18n="about.stat3">Transparent</p>
-            </div>
+            <div class="stat"><h3>4+</h3><p>Categories</p></div>
+            <div class="stat"><h3>24/7</h3><p>Access</p></div>
+            <div class="stat"><h3>100%</h3><p>Transparent</p></div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ===== CTA ===== -->
+  <!-- CTA -->
   <section class="section" style="background:var(--white)">
     <div class="container">
       <div class="cta-banner fade-in">
-        <h2 data-i18n="cta.title">질문이 있으신가요?</h2>
-        <p data-i18n="cta.desc">게시판에서 기존 답변을 확인하거나, 새로운 질문을 남겨주세요.</p>
-        <a href="board.html" class="btn" data-i18n="cta.btn">게시판으로 이동</a>
+        <h2 data-i18n="cta.title">Have a question?</h2>
+        <p data-i18n="cta.desc">Check existing answers on the board or leave a new question.</p>
+        <a href="board.html" class="btn" data-i18n="cta.btn">Go to Board</a>
       </div>
     </div>
   </section>
 
-  <!-- ===== FOOTER ===== -->
+  <!-- FOOTER -->
   <footer class="footer">
     <div class="container">
       <p>&copy; 2026 ERIKA. All rights reserved.</p>
       <div class="footer-links">
-        <a href="index.html" data-i18n="nav.home">Home</a>
-        <a href="project.html" data-i18n="nav.project">Project</a>
-        <a href="qna.html" data-i18n="nav.qna">Q&A</a>
-        <a href="board.html" data-i18n="nav.board">Board</a>
+        <a href="index.html">Home</a>
+        <a href="project.html">Project</a>
+        <a href="qna.html">Q&A</a>
+        <a href="board.html">Board</a>
       </div>
     </div>
   </footer>
 
-  <script src="js/main.js?v=2"></script>
+  <!-- CMS Edit Modal -->
+  <div class="modal-overlay" id="cmsEditModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="cmsEditTitle">Edit</h3>
+        <button class="modal-close" onclick="CMS.closeCmsModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="cmsEditBody"></div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/12.9.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js?v=3"></script>
+  <script src="js/main.js?v=3"></script>
+  <script src="js/cms.js?v=3"></script>
+  <script>document.addEventListener('DOMContentLoaded', () => CMS.init());</script>
 </body>
 </html>

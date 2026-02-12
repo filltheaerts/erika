@@ -58,11 +58,7 @@
         <div class="board-filters">
           <input type="text" id="boardSearch" placeholder="검색..." data-i18n-placeholder="board.search">
           <select id="filterCategory">
-            <option value="all" data-i18n="board.filter.allCat">전체 카테고리</option>
-            <option value="RH">RH</option>
-            <option value="VV">VV</option>
-            <option value="commercial">Commercial</option>
-            <option value="user acquisition">User Acquisition</option>
+            <option value="all" data-i18n="board.filter.allCat">All Categories</option>
           </select>
           <select id="filterStatus">
             <option value="all" data-i18n="board.filter.allStatus">전체 상태</option>
@@ -72,8 +68,9 @@
           <input type="text" id="filterAnswerer" placeholder="답변자 검색..." data-i18n-placeholder="board.filter.answerer">
         </div>
         <div class="board-actions">
-          <button class="btn btn-sm btn-outline" id="adminLoginBtn" onclick="BoardApp.showLogin()" data-i18n="board.loginBtn">관리자 로그인</button>
-          <button class="btn btn-sm btn-primary" onclick="BoardApp.showWriteModal()" data-i18n="board.writeBtn">질문하기</button>
+          <button class="btn btn-sm btn-outline" id="cmsManageCatBtn" onclick="CMS.showEditModal('categories')" style="display:none;" data-i18n="board.manageCat">Manage Categories</button>
+          <button class="btn btn-sm btn-outline" id="adminLoginBtn" onclick="BoardApp.showLogin()" data-i18n="board.loginBtn">Admin Login</button>
+          <button class="btn btn-sm btn-primary" onclick="BoardApp.showWriteModal()" data-i18n="board.writeBtn">Ask Question</button>
         </div>
       </div>
 
@@ -130,10 +127,6 @@
             <div class="form-group">
               <label data-i18n="board.write.category">카테고리</label>
               <select id="writeCategory" required>
-                <option value="RH">RH</option>
-                <option value="VV">VV</option>
-                <option value="commercial">Commercial</option>
-                <option value="user acquisition">User Acquisition</option>
               </select>
             </div>
           </div>
@@ -235,15 +228,36 @@
     </div>
   </footer>
 
+  <!-- CMS Edit Modal -->
+  <div class="modal-overlay" id="cmsEditModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="cmsEditTitle">Edit</h3>
+        <button class="modal-close" onclick="CMS.closeCmsModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="cmsEditBody"></div>
+    </div>
+  </div>
+
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/12.9.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js?v=2"></script>
-
-  <script src="js/main.js?v=2"></script>
-  <script src="js/board.js?v=2"></script>
+  <script src="js/firebase-config.js?v=3"></script>
+  <script src="js/main.js?v=3"></script>
+  <script src="js/board.js?v=3"></script>
+  <script src="js/cms.js?v=3"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => BoardApp.init());
+    document.addEventListener('DOMContentLoaded', async () => {
+      await CMS.init();
+      CMS.renderCategoryOptions();
+      await BoardApp.init();
+
+      // Show category manage button for admin
+      const catBtn = document.getElementById('cmsManageCatBtn');
+      if (catBtn && sessionStorage.getItem('erika_admin') === 'true') {
+        catBtn.style.display = '';
+      }
+    });
   </script>
 </body>
 </html>

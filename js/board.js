@@ -65,42 +65,6 @@ window.BoardData = {
     await postsRef.doc(id).delete();
   },
 
-  // 초기 샘플 데이터 시드 (컬렉션이 비어있을 때)
-  async seedIfEmpty() {
-    const snapshot = await postsRef.limit(1).get();
-    if (!snapshot.empty) return;
-
-    const samples = [
-      {
-        date: '2026-03-06', from: 'Laura', category: 'RH',
-        question: '어쩌고?', answer: '이래라',
-        answeredBy: 'Zach', resolved: 'Yes', followUp: '그럼이거는?',
-        createdAt: firebase.firestore.Timestamp.fromDate(new Date('2026-03-06T10:00:00'))
-      },
-      {
-        date: '2026-03-06', from: 'Laura', category: 'VV',
-        question: '저쩌고?', answer: '저래라',
-        answeredBy: 'Ed', resolved: 'Yes', followUp: '',
-        createdAt: firebase.firestore.Timestamp.fromDate(new Date('2026-03-06T10:01:00'))
-      },
-      {
-        date: '2026-03-06', from: 'Laura', category: 'commercial',
-        question: '어쩌고?', answer: '',
-        answeredBy: 'US-commercial', resolved: 'No', followUp: '',
-        createdAt: firebase.firestore.Timestamp.fromDate(new Date('2026-03-06T10:02:00'))
-      },
-      {
-        date: '2026-03-06', from: 'Laura', category: 'user acquisition',
-        question: '저쩌고?', answer: '',
-        answeredBy: 'Erika', resolved: 'No', followUp: '',
-        createdAt: firebase.firestore.Timestamp.fromDate(new Date('2026-03-06T10:03:00'))
-      }
-    ];
-
-    const batch = db.batch();
-    samples.forEach(s => batch.set(postsRef.doc(), s));
-    await batch.commit();
-  }
 };
 
 // ── Board App ──────────────────────────────────────────────
@@ -114,9 +78,6 @@ window.BoardApp = {
     this.isAdmin = sessionStorage.getItem(ADMIN_SESSION_KEY) === 'true';
     this.updateAdminUI();
     this.bindFilters();
-
-    // 샘플 데이터 시드
-    try { await BoardData.seedIfEmpty(); } catch (e) { console.warn('Seed skipped:', e); }
 
     // 실시간 구독 → 자동 렌더
     BoardData.subscribe(() => this.render());
@@ -155,8 +116,12 @@ window.BoardApp = {
   updateAdminUI() {
     const adminBar = document.getElementById('adminBar');
     const loginBtn = document.getElementById('adminLoginBtn');
+    const catBtn = document.getElementById('cmsManageCatBtn');
     if (adminBar) adminBar.classList.toggle('show', this.isAdmin);
     if (loginBtn) loginBtn.style.display = this.isAdmin ? 'none' : '';
+    if (catBtn) catBtn.style.display = this.isAdmin ? '' : 'none';
+    if (this.isAdmin && typeof CMS !== 'undefined') CMS.enableEditMode();
+    if (!this.isAdmin && typeof CMS !== 'undefined') CMS.disableEditMode();
   },
 
   showLogin() {

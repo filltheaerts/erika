@@ -101,17 +101,25 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/12.9.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js?v=2"></script>
-
-  <script src="js/main.js?v=2"></script>
-  <script src="js/board.js?v=2"></script>
+  <script src="js/firebase-config.js?v=3"></script>
+  <script src="js/main.js?v=3"></script>
+  <script src="js/board.js?v=3"></script>
+  <script src="js/cms.js?v=3"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
+      await CMS.init();
+      CMS.renderCategoryOptions();
+
       const accordion = document.getElementById('qnaAccordion');
       const emptyEl = document.getElementById('qnaEmpty');
       const searchInput = document.getElementById('qnaSearch');
-      const catBtns = document.querySelectorAll('.qna-cat-btn');
       let activeCat = 'all';
+
+      // Expose render for CMS category button re-binding
+      window._qnaRender = function(cat) {
+        if (cat !== undefined) activeCat = cat;
+        renderQna();
+      };
 
       function renderQna() {
         const posts = window.BoardData ? window.BoardData.getPosts() : [];
@@ -137,19 +145,19 @@
         accordion.innerHTML = filtered.map((p, i) => `
           <div class="accordion-item" data-index="${i}">
             <div class="accordion-header" onclick="this.parentElement.classList.toggle('open'); const body=this.nextElementSibling; body.style.maxHeight = body.style.maxHeight ? null : body.scrollHeight+'px';">
-              <span class="q-category">${escapeHtml(p.category)}</span>
-              <span class="q-text">${escapeHtml(p.question)}</span>
+              <span class="q-category">${esc(p.category)}</span>
+              <span class="q-text">${esc(p.question)}</span>
               <span class="q-status ${p.resolved === 'Yes' ? 'resolved' : 'pending'}">${p.resolved === 'Yes' ? (window._lang === 'en' ? 'Resolved' : '해결') : (window._lang === 'en' ? 'Pending' : '대기')}</span>
               <svg class="accordion-arrow" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
             </div>
             <div class="accordion-body">
               <div class="accordion-body-inner">
-                <p>${escapeHtml(p.answer)}</p>
+                <p>${esc(p.answer)}</p>
                 <div class="answer-meta">
-                  ${window._lang === 'en' ? 'Answered by' : '답변자'}: <strong>${escapeHtml(p.answeredBy || '-')}</strong>
+                  ${window._lang === 'en' ? 'Answered by' : '답변자'}: <strong>${esc(p.answeredBy || '-')}</strong>
                   &nbsp;|&nbsp;
                   ${window._lang === 'en' ? 'Date' : '날짜'}: ${p.date}
-                  ${p.followUp ? `&nbsp;|&nbsp; F/U: ${escapeHtml(p.followUp)}` : ''}
+                  ${p.followUp ? `&nbsp;|&nbsp; F/U: ${esc(p.followUp)}` : ''}
                 </div>
               </div>
             </div>
@@ -157,25 +165,9 @@
         `).join('');
       }
 
-      function escapeHtml(t) {
-        if (!t) return '';
-        const d = document.createElement('div');
-        d.textContent = t;
-        return d.innerHTML;
-      }
-
-      catBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-          catBtns.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          activeCat = btn.dataset.cat;
-          renderQna();
-        });
-      });
+      function esc(t) { if(!t) return ''; const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
 
       searchInput.addEventListener('input', renderQna);
-
-      // Firestore 실시간 구독 → Q&A 자동 갱신
       BoardData.subscribe(() => renderQna());
     });
   </script>
