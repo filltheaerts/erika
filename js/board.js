@@ -5,18 +5,9 @@
 
 const ADMIN_SESSION_KEY = 'erika_admin';
 
-// ── Password hashing ──────────────────────────────────────
-async function simpleHash(str) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(str);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-// Admin credentials (erika / erieri23!)
+// Admin credentials
 const ADMIN_ID = 'erika';
-const ADMIN_PW_HASH = '0861b69ca281b07cd2bc413f178e53c849238bae0d49c70e67fca59aa985c6a7';
+const ADMIN_PW = 'erieri23!';
 
 // ── Board Data Layer (Firestore) ──────────────────────────
 window.BoardData = {
@@ -132,22 +123,25 @@ window.BoardApp = {
   },
 
   // ── Admin Auth ─────────────────────────────────────────
-  async handleLogin(e) {
-    e.preventDefault();
-    const id = document.getElementById('loginId').value.trim();
-    const pw = document.getElementById('loginPw').value;
-    const errorEl = document.getElementById('loginError');
+  handleLogin(e) {
+    try {
+      e.preventDefault();
+      const id = document.getElementById('loginId').value.trim();
+      const pw = document.getElementById('loginPw').value;
+      const errorEl = document.getElementById('loginError');
 
-    const pwHash = await simpleHash(pw);
-    if (id === ADMIN_ID && pwHash === ADMIN_PW_HASH) {
-      this.isAdmin = true;
-      sessionStorage.setItem(ADMIN_SESSION_KEY, 'true');
-      this.updateAdminUI();
-      this.closeModals();
-      this.render();
-    } else {
-      errorEl.style.display = 'block';
-      setTimeout(() => errorEl.style.display = 'none', 3000);
+      if (id === ADMIN_ID && pw === ADMIN_PW) {
+        this.isAdmin = true;
+        sessionStorage.setItem(ADMIN_SESSION_KEY, 'true');
+        this.updateAdminUI();
+        this.closeModals();
+        this.render();
+      } else {
+        errorEl.style.display = 'block';
+        setTimeout(() => errorEl.style.display = 'none', 3000);
+      }
+    } catch (err) {
+      alert('Login error: ' + err.message);
     }
   },
 
