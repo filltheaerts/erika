@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=6">
+  <link rel="stylesheet" href="css/style.css?v=7">
 </head>
 <body>
 
@@ -51,6 +51,9 @@
         </p>
       </div>
 
+      <!-- Activity Banner -->
+      <div id="newActivityBanner" class="activity-banner hidden"></div>
+
       <!-- Toolbar -->
       <div class="board-toolbar">
         <div class="board-filters">
@@ -63,7 +66,7 @@
             <option value="Yes" data-i18n="board.filter.resolved">Resolved</option>
             <option value="No" data-i18n="board.filter.pending">Pending</option>
           </select>
-          <input type="text" id="filterAnswerer" placeholder="Search answerer..." data-i18n-placeholder="board.filter.answerer">
+          <input type="text" id="filterAnswerer" placeholder="Search commenter..." data-i18n-placeholder="board.filter.answerer">
         </div>
         <div class="board-actions">
           <button class="btn btn-sm btn-outline" id="cmsManageCatBtn" onclick="CMS.showEditModal('categories')" style="display:none;" data-i18n="board.manageCat">Manage Categories</button>
@@ -86,7 +89,7 @@
               <th data-i18n="board.th.category">Category</th>
               <th data-i18n="board.th.question">Question</th>
               <th data-i18n="board.th.status">Status</th>
-              <th data-i18n="board.th.answeredBy">Answered by</th>
+              <th data-i18n="board.th.answeredBy">Commented by</th>
             </tr>
           </thead>
           <tbody id="boardTableBody"></tbody>
@@ -199,10 +202,10 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/12.9.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js?v=6"></script>
-  <script src="js/main.js?v=6"></script>
-  <script src="js/board.js?v=6"></script>
-  <script src="js/cms.js?v=6"></script>
+  <script src="js/firebase-config.js?v=7"></script>
+  <script src="js/main.js?v=7"></script>
+  <script src="js/board.js?v=7"></script>
+  <script src="js/cms.js?v=7"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       await CMS.init();

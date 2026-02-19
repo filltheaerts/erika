@@ -392,6 +392,34 @@ body.admin-mode .cms-editable:hover { outline: 2px dashed var(--accent); outline
 }
 .cms-cat-item .cms-cat-del:hover { background: #E53935; color: #fff; }
 
+/* ── Activity Banner ───────────────────────────────────── */
+.activity-banner {
+  position: relative;
+  background: var(--accent-light);
+  border-left: 4px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 16px 40px 16px 20px;
+  margin-bottom: 20px;
+  font-size: .88rem;
+  line-height: 1.6;
+}
+.activity-banner .activity-section { margin-bottom: 8px; }
+.activity-banner .activity-section:last-of-type { margin-bottom: 0; }
+.activity-banner .activity-section strong { display: block; margin-bottom: 4px; color: var(--text); }
+.activity-banner ul { list-style: none; padding: 0; margin: 0; }
+.activity-banner li { padding: 2px 0; }
+.activity-banner a { color: var(--accent-dark); font-weight: 600; text-decoration: underline; cursor: pointer; }
+.activity-banner a:hover { color: var(--accent); }
+.activity-banner .activity-author { color: var(--text-muted); font-size: .82rem; }
+.activity-banner .dismiss-btn {
+  position: absolute; top: 10px; right: 10px;
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 1.1rem; color: var(--text-muted);
+  transition: all var(--transition); border: none; background: none;
+}
+.activity-banner .dismiss-btn:hover { background: rgba(0,0,0,.08); color: var(--text); }
+
 /* ── Animations ────────────────────────────────────────── */
 .fade-in { opacity: 0; transform: translateY(16px); transition: opacity .5s ease, transform .5s ease; }
 .fade-in.visible { opacity: 1; transform: translateY(0); }

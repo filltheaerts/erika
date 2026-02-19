@@ -94,7 +94,13 @@ window.BoardApp = {
     this.isAdmin = isAdmin();
     this.updateAdminUI();
     this.bindFilters();
-    BoardData.subscribe(() => this.render());
+    BoardData.subscribe((posts) => {
+      this.render();
+      if (!this._activityChecked) {
+        this._activityChecked = true;
+        this.checkNewActivity(posts);
+      }
+    });
   },
 
   updateAdminUI() {
@@ -402,6 +408,23 @@ window.BoardApp = {
         text,
         parentId: parentId || null,
       });
+
+      // Update post with last comment info
+      const postUpdates = {
+        lastCommentAt: firebase.firestore.FieldValue.serverTimestamp(),
+        lastCommentBy: author
+      };
+
+      // If top-level comment and no answeredBy yet, set it
+      if (!parentId) {
+        const post = BoardData.getPosts().find(p => p.id === postId);
+        if (post && !post.answeredBy) {
+          postUpdates.answeredBy = author;
+        }
+      }
+
+      await BoardData.updatePost(postId, postUpdates);
+
       textEl.value = '';
       if (parentId) {
         document.getElementById('replyForm_' + parentId).style.display = 'none';
@@ -476,7 +499,7 @@ window.BoardApp = {
       isKo ? '카테고리' : 'Category',
       isKo ? '질문' : 'Question',
       isKo ? '답변' : 'Answer',
-      isKo ? '답변자' : 'Answered by',
+      isKo ? '댓글 작성자' : 'Commented by',
       isKo ? '상태' : 'Status',
       'F/U'
     ];
@@ -590,6 +613,62 @@ window.BoardApp = {
     this.currentPage = n;
     this.render();
     window.scrollTo({ top: 200, behavior: 'smooth' });
+  },
+
+  // ── New Activity Banner ────────────────────────────────
+  checkNewActivity(posts) {
+    const banner = document.getElementById('newActivityBanner');
+    if (!banner || !posts || posts.length === 0) return;
+
+    const cutoff = new Date(Date.now() - 12 * 60 * 60 * 1000);
+    const lang = window._lang || 'en';
+    const isKo = lang === 'ko';
+
+    const newQuestions = posts.filter(p => {
+      if (!p.createdAt) return false;
+      const d = p.createdAt.toDate ? p.createdAt.toDate() : new Date(p.createdAt);
+      return d > cutoff;
+    });
+
+    const newComments = posts.filter(p => {
+      if (!p.lastCommentAt) return false;
+      const d = p.lastCommentAt.toDate ? p.lastCommentAt.toDate() : new Date(p.lastCommentAt);
+      return d > cutoff;
+    });
+
+    if (newQuestions.length === 0 && newComments.length === 0) {
+      banner.classList.add('hidden');
+      return;
+    }
+
+    let html = '';
+
+    if (newQuestions.length > 0) {
+      html += `<div class="activity-section">
+        <strong>${isKo ? '📋 새 질문' : '📋 New Questions'} (${newQuestions.length}):</strong>
+        <ul>`;
+      newQuestions.forEach(p => {
+        const title = (p.question || '').substring(0, 50) + ((p.question || '').length > 50 ? '...' : '');
+        html += `<li><a href="javascript:void(0)" onclick="BoardApp.showDetail('${p.id}')">${escHtml(title)}</a> <span class="activity-author">— by ${escHtml(p.from)}</span></li>`;
+      });
+      html += `</ul></div>`;
+    }
+
+    if (newComments.length > 0) {
+      html += `<div class="activity-section">
+        <strong>${isKo ? '💬 새 댓글' : '💬 New Comments'} (${newComments.length}):</strong>
+        <ul>`;
+      newComments.forEach(p => {
+        const title = (p.question || '').substring(0, 50) + ((p.question || '').length > 50 ? '...' : '');
+        html += `<li><a href="javascript:void(0)" onclick="BoardApp.showDetail('${p.id}')">${escHtml(title)}</a> <span class="activity-author">— comment by ${escHtml(p.lastCommentBy || '')}</span></li>`;
+      });
+      html += `</ul></div>`;
+    }
+
+    html += `<button class="dismiss-btn" onclick="document.getElementById('newActivityBanner').classList.add('hidden')" title="${isKo ? '닫기' : 'Dismiss'}">&times;</button>`;
+
+    banner.innerHTML = html;
+    banner.classList.remove('hidden');
   }
 };
 
