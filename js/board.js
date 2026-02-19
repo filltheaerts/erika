@@ -416,9 +416,14 @@ window.BoardApp = {
         lastCommentBy: author
       };
 
-      // Always update answeredBy to latest top-level commenter
+      // Pending: always show last commenter / Resolved: keep first commenter
       if (!parentId) {
-        postUpdates.answeredBy = author;
+        const post = BoardData.getPosts().find(p => p.id === postId);
+        if (post && post.resolved === 'Yes') {
+          if (!post.answeredBy) postUpdates.answeredBy = author;
+        } else {
+          postUpdates.answeredBy = author;
+        }
       }
 
       await BoardData.updatePost(postId, postUpdates);
@@ -613,28 +618,30 @@ window.BoardApp = {
     window.scrollTo({ top: 200, behavior: 'smooth' });
   },
 
-  // ── Migration: set answeredBy on resolved posts ────────
+  // ── Migration: fill empty answeredBy on all posts ───────
   async migrateResolvedPosts() {
-    if (localStorage.getItem('erika_migration_v1')) return;
+    if (localStorage.getItem('erika_migration_v2')) return;
     if (!this.isAdmin) return;
 
-    const posts = BoardData.getPosts().filter(p => p.resolved === 'Yes');
+    const posts = BoardData.getPosts().filter(p => !p.answeredBy);
     for (const post of posts) {
       try {
+        // Resolved → first top-level comment, Pending → last top-level comment
+        const order = post.resolved === 'Yes' ? 'asc' : 'desc';
         const snap = await postsRef.doc(post.id).collection('comments')
           .where('parentId', '==', null)
-          .orderBy('createdAt', 'asc')
+          .orderBy('createdAt', order)
           .limit(1)
           .get();
         if (!snap.empty) {
-          const firstComment = snap.docs[0].data();
-          await BoardData.updatePost(post.id, { answeredBy: firstComment.author });
+          const comment = snap.docs[0].data();
+          await BoardData.updatePost(post.id, { answeredBy: comment.author });
         }
       } catch (err) {
         console.error('Migration error for post', post.id, err);
       }
     }
-    localStorage.setItem('erika_migration_v1', 'done');
+    localStorage.setItem('erika_migration_v2', 'done');
   },
 
   // ── New Activity Banner ────────────────────────────────
