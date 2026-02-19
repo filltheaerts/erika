@@ -620,28 +620,33 @@ window.BoardApp = {
 
   // ── Migration: fill empty answeredBy on all posts ───────
   async migrateResolvedPosts() {
-    if (localStorage.getItem('erika_migration_v2')) return;
+    if (localStorage.getItem('erika_migration_v3')) return;
     if (!this.isAdmin) return;
 
     const posts = BoardData.getPosts().filter(p => !p.answeredBy);
+    let allOk = true;
     for (const post of posts) {
       try {
-        // Resolved → first top-level comment, Pending → last top-level comment
-        const order = post.resolved === 'Yes' ? 'asc' : 'desc';
+        // Fetch all comments, filter top-level client-side (avoids composite index)
         const snap = await postsRef.doc(post.id).collection('comments')
-          .where('parentId', '==', null)
-          .orderBy('createdAt', order)
-          .limit(1)
+          .orderBy('createdAt', 'asc')
           .get();
-        if (!snap.empty) {
-          const comment = snap.docs[0].data();
-          await BoardData.updatePost(post.id, { answeredBy: comment.author });
+        const topLevel = snap.docs
+          .map(d => d.data())
+          .filter(c => !c.parentId);
+        if (topLevel.length > 0) {
+          // Resolved → first commenter, Pending → last commenter
+          const author = post.resolved === 'Yes'
+            ? topLevel[0].author
+            : topLevel[topLevel.length - 1].author;
+          await BoardData.updatePost(post.id, { answeredBy: author });
         }
       } catch (err) {
         console.error('Migration error for post', post.id, err);
+        allOk = false;
       }
     }
-    localStorage.setItem('erika_migration_v2', 'done');
+    if (allOk) localStorage.setItem('erika_migration_v3', 'done');
   },
 
   // ── New Activity Banner ────────────────────────────────
