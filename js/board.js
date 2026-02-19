@@ -96,9 +96,9 @@ window.BoardApp = {
     this.bindFilters();
     BoardData.subscribe((posts) => {
       this.render();
+      this.checkNewActivity(posts);
       if (!this._activityChecked) {
         this._activityChecked = true;
-        this.checkNewActivity(posts);
         this.migrateResolvedPosts();
       }
     });
@@ -442,6 +442,22 @@ window.BoardApp = {
   async deleteComment(postId, commentId) {
     try {
       await BoardData.deleteComment(postId, commentId);
+      // Recalculate lastCommentAt/lastCommentBy from remaining comments
+      const snap = await postsRef.doc(postId).collection('comments').get();
+      if (snap.empty) {
+        await BoardData.updatePost(postId, { lastCommentAt: null, lastCommentBy: '' });
+      } else {
+        let latest = null;
+        snap.docs.forEach(d => {
+          const c = d.data();
+          if (c.createdAt && (!latest || (c.createdAt.toMillis && c.createdAt.toMillis() > latest.createdAt.toMillis()))) {
+            latest = c;
+          }
+        });
+        if (latest) {
+          await BoardData.updatePost(postId, { lastCommentAt: latest.createdAt, lastCommentBy: latest.author });
+        }
+      }
     } catch (err) {
       console.error('Delete comment error:', err);
     }
