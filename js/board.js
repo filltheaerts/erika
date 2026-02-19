@@ -99,6 +99,7 @@ window.BoardApp = {
       if (!this._activityChecked) {
         this._activityChecked = true;
         this.checkNewActivity(posts);
+        this.migrateResolvedPosts();
       }
     });
   },
@@ -415,12 +416,9 @@ window.BoardApp = {
         lastCommentBy: author
       };
 
-      // If top-level comment and no answeredBy yet, set it
+      // Always update answeredBy to latest top-level commenter
       if (!parentId) {
-        const post = BoardData.getPosts().find(p => p.id === postId);
-        if (post && !post.answeredBy) {
-          postUpdates.answeredBy = author;
-        }
+        postUpdates.answeredBy = author;
       }
 
       await BoardData.updatePost(postId, postUpdates);
@@ -613,6 +611,30 @@ window.BoardApp = {
     this.currentPage = n;
     this.render();
     window.scrollTo({ top: 200, behavior: 'smooth' });
+  },
+
+  // ── Migration: set answeredBy on resolved posts ────────
+  async migrateResolvedPosts() {
+    if (localStorage.getItem('erika_migration_v1')) return;
+    if (!this.isAdmin) return;
+
+    const posts = BoardData.getPosts().filter(p => p.resolved === 'Yes');
+    for (const post of posts) {
+      try {
+        const snap = await postsRef.doc(post.id).collection('comments')
+          .where('parentId', '==', null)
+          .orderBy('createdAt', 'asc')
+          .limit(1)
+          .get();
+        if (!snap.empty) {
+          const firstComment = snap.docs[0].data();
+          await BoardData.updatePost(post.id, { answeredBy: firstComment.author });
+        }
+      } catch (err) {
+        console.error('Migration error for post', post.id, err);
+      }
+    }
+    localStorage.setItem('erika_migration_v1', 'done');
   },
 
   // ── New Activity Banner ────────────────────────────────

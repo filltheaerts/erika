@@ -231,13 +231,14 @@ h3 { font-size: 1.1rem; }
 .post-detail { padding: 8px; }
 .post-detail .post-meta { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
 .post-detail .post-meta span { font-size: .82rem; color: var(--text-muted); }
-.post-detail .post-question { font-size: 1rem; line-height: 1.7; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+.post-detail .post-question { font-size: 1rem; line-height: 1.7; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); white-space: pre-wrap; word-break: break-word; }
 .post-detail .post-answer {
   background: var(--accent-light); border-left: 3px solid var(--accent);
   border-radius: 0 var(--radius) var(--radius) 0; padding: 16px; line-height: 1.7;
+  white-space: pre-wrap; word-break: break-word;
 }
 .post-detail .post-answer h4 { color: var(--accent-dark); margin-bottom: 6px; }
-.post-detail .post-followup { margin-top: 12px; padding: 12px; background: #FFF8E1; border-radius: var(--radius); font-size: .9rem; }
+.post-detail .post-followup { margin-top: 12px; padding: 12px; background: #FFF8E1; border-radius: var(--radius); font-size: .9rem; white-space: pre-wrap; word-break: break-word; }
 .post-action-bar { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
 
 /* ── Comments ──────────────────────────────────────────── */
