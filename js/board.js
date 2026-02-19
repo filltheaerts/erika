@@ -620,33 +620,46 @@ window.BoardApp = {
 
   // ── Migration: fill empty answeredBy on all posts ───────
   async migrateResolvedPosts() {
-    if (localStorage.getItem('erika_migration_v3')) return;
+    if (localStorage.getItem('erika_migration_v4')) return;
     if (!this.isAdmin) return;
 
+    console.log('[Migration v4] Starting...');
     const posts = BoardData.getPosts().filter(p => !p.answeredBy);
+    console.log('[Migration v4] Posts without answeredBy:', posts.length);
+
     let allOk = true;
     for (const post of posts) {
       try {
-        // Fetch all comments, filter top-level client-side (avoids composite index)
-        const snap = await postsRef.doc(post.id).collection('comments')
-          .orderBy('createdAt', 'asc')
-          .get();
+        // Simplest query — no orderBy, no where — just get all comments
+        const snap = await postsRef.doc(post.id).collection('comments').get();
+        console.log('[Migration v4] Post', post.id, '— comments:', snap.size);
+
+        // Filter top-level and sort by createdAt client-side
         const topLevel = snap.docs
           .map(d => d.data())
-          .filter(c => !c.parentId);
+          .filter(c => !c.parentId)
+          .sort((a, b) => {
+            const ta = a.createdAt ? (a.createdAt.toMillis ? a.createdAt.toMillis() : 0) : 0;
+            const tb = b.createdAt ? (b.createdAt.toMillis ? b.createdAt.toMillis() : 0) : 0;
+            return ta - tb;
+          });
+
         if (topLevel.length > 0) {
-          // Resolved → first commenter, Pending → last commenter
           const author = post.resolved === 'Yes'
             ? topLevel[0].author
             : topLevel[topLevel.length - 1].author;
+          console.log('[Migration v4] Post', post.id, '→ answeredBy:', author);
           await BoardData.updatePost(post.id, { answeredBy: author });
         }
       } catch (err) {
-        console.error('Migration error for post', post.id, err);
+        console.error('[Migration v4] Error for post', post.id, err);
         allOk = false;
       }
     }
-    if (allOk) localStorage.setItem('erika_migration_v3', 'done');
+    if (allOk) {
+      localStorage.setItem('erika_migration_v4', 'done');
+      console.log('[Migration v4] Complete!');
+    }
   },
 
   // ── New Activity Banner ────────────────────────────────
