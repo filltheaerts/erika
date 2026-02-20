@@ -393,6 +393,16 @@ body.admin-mode .cms-editable:hover { outline: 2px dashed var(--accent); outline
 }
 .cms-cat-item .cms-cat-del:hover { background: #E53935; color: #fff; }
 
+/* ── Notice Banner ─────────────────────────────────────── */
+.notice-banner {
+  display: flex; align-items: center; gap: 10px;
+  background: #FFF8E1; border-left: 4px solid #FFB300;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 12px 18px; margin-bottom: 16px;
+  font-size: .88rem; color: #6D4C00; line-height: 1.5;
+}
+.notice-banner svg { flex-shrink: 0; stroke: #F59E0B; }
+
 /* ── Activity Banner ───────────────────────────────────── */
 .activity-banner {
   position: relative;
