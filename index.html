@@ -42,7 +42,7 @@
     const ADMIN_PW = 'erieri23!';
 
     if (sessionStorage.getItem('rh_auth')) {
-      window.location.href = 'home.html';
+      window.location.href = 'board.html';
     }
 
     function handleLogin(e) {
@@ -53,10 +53,10 @@
 
       if (id === ADMIN_ID && pw === ADMIN_PW) {
         sessionStorage.setItem('rh_auth', 'admin');
-        window.location.href = 'home.html';
+        window.location.href = 'board.html';
       } else if (id === GUEST_ID && pw === GUEST_PW) {
         sessionStorage.setItem('rh_auth', 'guest');
-        window.location.href = 'home.html';
+        window.location.href = 'board.html';
       } else {
         errorEl.style.display = 'block';
         setTimeout(() => errorEl.style.display = 'none', 3000);
