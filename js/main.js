@@ -3,22 +3,21 @@
    Auth Guard, Navigation, Language Toggle (KR/EN), i18n
    ============================================================ */
 
-// ── Auth Guard ────────────────────────────────────────────
+// ── Auth Guard (Firebase Auth) ────────────────────────────
 function checkAuth() {
-  if (!sessionStorage.getItem('rh_auth')) {
-    window.location.href = 'index.html';
-    return false;
-  }
-  return true;
+  // Auth guard is now handled by onAuthStateChanged in board.html
+  return !!firebase.auth().currentUser;
 }
 
 function doLogout() {
-  sessionStorage.removeItem('rh_auth');
-  window.location.href = 'index.html';
+  firebase.auth().signOut().then(() => {
+    window.location.href = 'index.html';
+  });
 }
 
 function isAdmin() {
-  return sessionStorage.getItem('rh_auth') === 'admin';
+  const user = firebase.auth().currentUser;
+  return user && user.email === 'erika@erika-board.com';
 }
 
 // ── i18n Translations ──────────────────────────────────────
@@ -205,7 +204,7 @@ function initScrollAnimations() {
 
 // ── Init ───────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  checkAuth();
+  // Auth guard is handled by onAuthStateChanged in board.html
   initNav();
   initScrollAnimations();
   setLanguage(window._lang);

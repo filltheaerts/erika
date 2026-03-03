@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+KR:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=4">
+  <link rel="stylesheet" href="css/style.css?v=15">
 </head>
 <body class="login-page">
 
@@ -29,38 +29,43 @@
         <p id="loginError" style="color:#E53935; font-size:.85rem; margin-bottom:12px; display:none;">
           Invalid ID or password.
         </p>
-        <button type="submit" class="btn btn-primary" style="width:100%;">Login</button>
+        <button type="submit" class="btn btn-primary" id="loginBtn" style="width:100%;">Login</button>
       </form>
     </div>
     <p class="login-footer">&copy; 2026 RH&VV Q&A</p>
   </div>
 
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/12.9.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.9.0/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js?v=15"></script>
   <script>
-    const GUEST_ID = 'rh.kr.gtm';
-    const GUEST_PW = 'kQ7$mP2x#9nL';
-    const ADMIN_ID = 'erika';
-    const ADMIN_PW = 'erieri23!';
-
-    if (sessionStorage.getItem('rh_auth')) {
-      window.location.href = 'board.html';
-    }
+    // If already signed in, skip to board
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) window.location.href = 'board.html';
+    });
 
     function handleLogin(e) {
       e.preventDefault();
       const id = document.getElementById('loginId').value.trim();
       const pw = document.getElementById('loginPw').value;
       const errorEl = document.getElementById('loginError');
+      const btn = document.getElementById('loginBtn');
 
-      if (id === ADMIN_ID && pw === ADMIN_PW) {
-        sessionStorage.setItem('rh_auth', 'admin');
-        window.location.href = 'board.html';
-      } else if (id === GUEST_ID && pw === GUEST_PW) {
-        sessionStorage.setItem('rh_auth', 'guest');
-        window.location.href = 'board.html';
-      } else {
-        errorEl.style.display = 'block';
-        setTimeout(() => errorEl.style.display = 'none', 3000);
-      }
+      btn.disabled = true;
+      btn.textContent = 'Signing in...';
+
+      const email = id + '@erika-board.com';
+      firebase.auth().signInWithEmailAndPassword(email, pw)
+        .then(() => {
+          window.location.href = 'board.html';
+        })
+        .catch(() => {
+          errorEl.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'Login';
+          setTimeout(() => errorEl.style.display = 'none', 3000);
+        });
     }
   </script>
 </body>

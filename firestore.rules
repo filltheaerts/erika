@@ -1,5 +1,5 @@
 // ============================================================
-// ERIKA — Firestore Security Rules
+// ERIKA — Firestore Security Rules (Firebase Auth)
 // ============================================================
 //
 // [적용 방법]
@@ -8,43 +8,44 @@
 // 3. "게시" 클릭
 //
 // [규칙 설명]
-// - 모든 사용자: 게시물 읽기(read) 가능
-// - 모든 사용자: 새 질문 작성(create) 가능 (필수 필드 검증)
-// - 관리자 인증은 클라이언트 측에서 처리하므로,
-//   update/delete는 현재 open으로 설정
-//   (프로덕션 환경에서는 Firebase Auth 연동 권장)
+// - 인증된 사용자만 데이터 접근 가능
+// - admin(erika@erika-board.com)만 게시물 삭제 및 설정 수정 가능
 // ============================================================
 
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Helper: 인증된 사용자인지 확인
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Helper: admin 사용자인지 확인
+    function isAdminUser() {
+      return isSignedIn() && request.auth.token.email == 'erika@erika-board.com';
+    }
+
     // posts 컬렉션
     match /posts/{postId} {
+      allow read, create, update: if isSignedIn();
+      allow delete: if isAdminUser();
 
-      // 누구나 읽기 가능
-      allow read: if true;
+      // comments 서브컬렉션
+      match /comments/{commentId} {
+        allow read, create, delete: if isSignedIn();
+      }
+    }
 
-      // 새 질문 작성 — 필수 필드 검증
-      allow create: if
-        request.resource.data.keys().hasAll([
-          'date', 'from', 'category', 'question',
-          'answer', 'answeredBy', 'resolved', 'followUp'
-        ])
-        && request.resource.data.from is string
-        && request.resource.data.from.size() > 0
-        && request.resource.data.from.size() <= 50
-        && request.resource.data.question is string
-        && request.resource.data.question.size() > 0
-        && request.resource.data.question.size() <= 2000
-        && request.resource.data.category in [
-             'RH', 'VV', 'commercial', 'user acquisition'
-           ];
+    // settings 컬렉션 (CMS 콘텐츠)
+    match /settings/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isAdminUser();
+    }
 
-      // 수정/삭제 — 현재 open (관리자 인증은 클라이언트에서 처리)
-      // 프로덕션에서는 Firebase Auth 기반으로 변경 권장:
-      // allow update, delete: if request.auth != null && request.auth.token.admin == true;
-      allow update, delete: if true;
+    // 그 외 모든 문서 — 접근 차단
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

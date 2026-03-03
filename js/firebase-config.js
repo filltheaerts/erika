@@ -14,6 +14,7 @@ const firebaseConfig = {
 // ── Initialize Firebase ────────────────────────────────────
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const auth = firebase.auth();
 
 // Firestore 컬렉션 참조
 const postsRef = db.collection('posts');
