@@ -173,7 +173,7 @@ window.BoardApp = {
         </div>
         <div class="post-question">
           <h4 style="margin-bottom:8px; color:var(--text-secondary);">Q.</h4>
-          ${escHtml(post.question)}
+          <div class="question-text">${escHtml(post.question)}</div>
         </div>
         ${post.answer ? `
         <div class="post-answer">
